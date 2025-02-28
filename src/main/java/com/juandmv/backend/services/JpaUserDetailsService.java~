@@ -1,7 +1,7 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.models.entities.User;
-import com.juandmv.backend.repositories.UserRepository;
+import com.juandmv.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

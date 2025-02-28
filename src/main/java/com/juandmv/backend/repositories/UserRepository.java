@@ -1,4 +1,4 @@
-package com.juandmv.backend.repository;
+package com.juandmv.backend.repositories;
 
 import com.juandmv.backend.models.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
