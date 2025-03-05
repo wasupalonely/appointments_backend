@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AppointmentService {
@@ -45,9 +43,7 @@ public class AppointmentService {
         appointment.setStartTime(createAppointmentDto.getStartTime());
         appointment.setEndTime(createAppointmentDto.getEndTime());
         appointment.setNotes(createAppointmentDto.getNotes());
-
-        User doctor = getAppointmentDoctor(appointment);
-        appointment.setDoctor(doctor);
+        // appointment.setDoctor(doctor);
 
         return appointmentRepository.save(appointment);
     }
@@ -58,47 +54,16 @@ public class AppointmentService {
         appointmentRepository.deleteById(id);
     }
 
+    // TODO: Implementar algoritmo una vez hecho el availability
     private User getAppointmentDoctor(Appointment appointment) {
         // TODO: Validar especialidad (sería buscar por especialidad si se implementa)
-        // Primero, se buscan a los doctores con horario disponible en la hora del
-        // appointment con availability y unavailability (vAlidar espeicialida si se implementa)
-
-        List<Map<String, Object>> availableDoctors = new ArrayList<>();
-        List<User> doctors = userService.findByRole("ROLE_DOCTOR");
-
-        if (doctors.isEmpty()) {
-            throw new ResourceNotFoundException("No hay doctores disponibles");
-        }
-
-        doctors.forEach(doctor -> {
-            List<Appointment> doctorAppointments = findByDoctorId(doctor.getId());
-            boolean isAvailable = true;
-            for (Appointment doctorAppointment : doctorAppointments) {
-                if (appointment.getStartTime().after(doctorAppointment.getStartTime())
-                        && appointment.getStartTime().before(doctorAppointment.getEndTime())) {
-                    isAvailable = false;
-                    break;
-                }
-            }
-            if (isAvailable) {
-                Map<String, Object> availableDoctor = new HashMap<>();
-                availableDoctor.put("numOfAppointments", doctorAppointments.size());
-                availableDoctor.put("doctor", doctor);
-                availableDoctors.add(availableDoctor);
-            }
-        });
-
+        // Primero, se buscan a los doctores con horario disponible en la hora del appointment con availability y unavailability (vAlidar espeicialida si se implementa)
+        List<User> availableDoctors = new ArrayList<>();
+        List<User> doctors = userService.findByRole(Roles.DOCTOR.name());
         // Luego se valida entre los doctores el que tenga menos citas y se le asigna la cita
-        User doctor = null;
-        int minAppointments = Integer.MAX_VALUE;
-        for (Map<String, Object> availableDoctor : availableDoctors) {
-            int numOfAppointments = (int) availableDoctor.get("numOfAppointments");
-            if (numOfAppointments < minAppointments) {
-                minAppointments = numOfAppointments;
-                doctor = (User) availableDoctor.get("doctor");
-            }
-        }
 
-        return doctor;
+
+        // Se retorna el doctor
+
     }
 }

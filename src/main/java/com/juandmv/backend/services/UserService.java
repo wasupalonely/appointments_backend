@@ -32,6 +32,8 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<User> findByRole(String role) { return userRepository.findByRoles_Name(role); }
+
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -49,10 +51,14 @@ public class UserService {
         }
 
         List<Role> roles = new ArrayList<>();
-        // Revisar la asignación de un rol
+
         Optional<Role> optionalRole = createUserDto.getRole() == Roles.DOCTOR ?
                 roleRepository.findByName("ROLE_DOCTOR") :
-                roleRepository.findByName("ROLE_USER");
+                        createUserDto.getRole() == Roles.USER ?
+                                roleRepository.findByName("ROLE_USER") :
+                                roleRepository.findByName("ROLE_ADMIN");
+
+
         optionalRole.ifPresent(roles::add);
         createUserDto.setRoles(roles);
 

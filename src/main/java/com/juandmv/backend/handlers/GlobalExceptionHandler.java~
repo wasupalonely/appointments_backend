@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidDatesRangeException(InvalidDatesRangeException ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
+                "Rango de fechas no válido (fecha final debe ser posterior a la fecha inicial y la fecha inicial debe ser posterior a la fecha actual)",
                 ex.getMessage(),
                 request.getDescription(false)
         );
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleScheduleConflictException(ScheduleConflictException ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
-                "Conflict",
+                "Este horario ya está ocupado",
                 ex.getMessage(),
                 request.getDescription(false)
         );

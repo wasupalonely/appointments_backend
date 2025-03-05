@@ -26,8 +26,15 @@ public class AvailabilityService {
     public List<Availability> findByDoctorId(Long doctorId) { return availabilityRepository.findByDoctorId(doctorId); }
 
     public Availability save(CreateAvailabilityDto createAvailabilityDto) {
-        if (createAvailabilityDto.getEndTime().before(createAvailabilityDto.getStartTime())) { throw new InvalidDatesRangeException("La fecha de finalización debe ser posterior a la de inicio"); }
+        if (createAvailabilityDto.getEndTime().before(createAvailabilityDto.getStartTime()) ||
+                createAvailabilityDto.getStartTime().after(createAvailabilityDto.getEndTime())) {
+            throw new InvalidDatesRangeException("La fecha de finalización debe ser posterior a la de inicio");
+        }
         Availability availability = new Availability();
+        availability.setDayOfWeek(createAvailabilityDto.getDayOfWeek());
+        availability.setStartTime(createAvailabilityDto.getStartTime());
+        availability.setEndTime(createAvailabilityDto.getEndTime());
+        availability.setRecurring(createAvailabilityDto.isRecurring());
 
         return availabilityRepository.save(availability);
     }

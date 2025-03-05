@@ -2,8 +2,6 @@ package com.juandmv.backend.models.dto;
 
 import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.models.entities.Role;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -31,6 +29,5 @@ public class CreateUserDto {
     // TODO: Implementar roles
     private List<Role> roles;
 
-    @Enumerated(EnumType.STRING)
     private Roles role;
 }
