@@ -1,25 +1,24 @@
 package com.juandmv.backend.models.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.DayOfWeek;
 import java.util.Date;
 
 @Entity
-@Table(name = "availabilities")
-public class Availability {
+@Table(name = "unavailabilities")
+@Getter
+@Setter
+public class Unavailability {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "doctorId", referencedColumnName = "id")
-    public User doctor;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    public DayOfWeek dayOfWeek;
+    private User doctor;
 
     @Column(nullable = false)
     private Date startTime;
@@ -28,5 +27,9 @@ public class Availability {
     private Date endTime;
 
     @Column(nullable = false)
-    private boolean isRecurring;
+    private String reason;
+
+    private Date createdAt = new Date();
+
+    private Date updatedAt = new Date();
 }

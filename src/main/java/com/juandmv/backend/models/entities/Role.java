@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "roles")
 @Getter
@@ -17,6 +19,10 @@ public class Role {
     private Long id;
 
     private String name;
+
+    private Date createdAt = new Date();
+
+    private Date updatedAt = new Date();
 
     public Role(String name) {
         this.name = name;

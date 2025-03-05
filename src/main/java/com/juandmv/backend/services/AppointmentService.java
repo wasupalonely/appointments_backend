@@ -4,11 +4,14 @@ import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.models.dto.CreateAppointmentDto;
 import com.juandmv.backend.models.entities.Appointment;
+import com.juandmv.backend.models.entities.Availability;
+import com.juandmv.backend.models.entities.Unavailability;
 import com.juandmv.backend.models.entities.User;
 import com.juandmv.backend.repositories.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +22,12 @@ public class AppointmentService {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private UnavailabilityService unavailabilityService;
+
+    @Autowired
+    private AvailabilityService availabilityService;
 
     @Autowired
     private UserService userService;
@@ -38,7 +47,6 @@ public class AppointmentService {
         // TODO: Validar si se va a tener en cuenta la especialidad para asignar un doctor con horario disponible
         User patient = userService.findById(createAppointmentDto.getPatientId());
 
-        // Algoritmo para asignar un doctor con horario disponible
 
         Appointment appointment = new Appointment();
         appointment.setPatient(patient);
@@ -46,6 +54,7 @@ public class AppointmentService {
         appointment.setEndTime(createAppointmentDto.getEndTime());
         appointment.setNotes(createAppointmentDto.getNotes());
 
+        // Algoritmo para asignar un doctor con horario disponible
         User doctor = getAppointmentDoctor(appointment);
         appointment.setDoctor(doctor);
 
@@ -72,12 +81,38 @@ public class AppointmentService {
 
         doctors.forEach(doctor -> {
             List<Appointment> doctorAppointments = findByDoctorId(doctor.getId());
+            List<Unavailability> doctorUnavailabilities = unavailabilityService.findByDoctorId(doctor.getId());
+            List<Availability> doctorAvailabilities = availabilityService.findByDoctorId(doctor.getId());
+
             boolean isAvailable = true;
             for (Appointment doctorAppointment : doctorAppointments) {
+                // Primer filtro: Horario disponible por citas
                 if (appointment.getStartTime().after(doctorAppointment.getStartTime())
                         && appointment.getStartTime().before(doctorAppointment.getEndTime())) {
                     isAvailable = false;
                     break;
+                }
+
+                // Segundo filtro: Horario disponible por unavailability
+                if (isAvailable) {
+                    for (Unavailability unavailability : doctorUnavailabilities) {
+                        if (appointment.getStartTime().after(unavailability.getStartTime())
+                                && appointment.getStartTime().before(unavailability.getEndTime())) {
+                            isAvailable = false;
+                            break;
+                        }
+                    }
+                }
+
+                // Tercer filtro: Horario disponible por availability
+                if (isAvailable) {
+                    for (Availability availability : doctorAvailabilities) {
+                        if (availability.getStartTime().after(appointment.getStartTime())
+                                && availability.getStartTime().before(appointment.getEndTime())) {
+                            isAvailable = false;
+                            break;
+                        }
+                    }
                 }
             }
             if (isAvailable) {

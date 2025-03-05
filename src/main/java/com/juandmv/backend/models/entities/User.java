@@ -23,6 +23,7 @@ public class User {
     private String email;
     private String password;
     private Date createdAt = new Date();
+    private Date updatedAt = new Date();
     // TODO: Implementar roles de usuario (estudiante, ciudadano)
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

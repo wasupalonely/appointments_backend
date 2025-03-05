@@ -5,38 +5,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.DayOfWeek;
 import java.util.Date;
 
 @Entity
-@Table(name = "availabilities")
+@Table(name = "reminders")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Availability {
+public class Reminder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "doctorId", referencedColumnName = "id")
-    private User doctor;
+    @JoinColumn(name = "appointmentId", referencedColumnName = "id")
+    private Appointment appointment;
 
-    @Enumerated(EnumType.STRING)
+    // TODO: Make this an enum
     @Column(nullable = false)
-    private DayOfWeek dayOfWeek;
+    private String reminderType;
 
-    @Column(nullable = false)
-    private Date startTime;
+    private Date sentAt = new Date();
 
-    @Column(nullable = false)
-    private Date endTime;
-
-    @Column(nullable = false)
-    private boolean isRecurring;
+    // TODO: Validate the type of this!
+    private boolean status;
 
     private Date createdAt = new Date();
-
     private Date updatedAt = new Date();
 }
