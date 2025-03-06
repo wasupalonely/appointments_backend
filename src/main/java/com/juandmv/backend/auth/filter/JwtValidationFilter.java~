@@ -63,6 +63,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
             response.setContentType(TokenJwtConfig.CONTENT_TYPE);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
-        
+
+        chain.doFilter(request, response);
     }
 }

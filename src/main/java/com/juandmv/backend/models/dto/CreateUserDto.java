@@ -17,10 +17,13 @@ import java.util.List;
 @Setter
 public class CreateUserDto {
 
+    @NotBlank(message = "El nombre de usuario es obligatorio")
     private String username;
 
+    @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
 
+    @NotBlank(message = "El apellido es obligatorio")
     private String lastName;
 
     private String phone;
