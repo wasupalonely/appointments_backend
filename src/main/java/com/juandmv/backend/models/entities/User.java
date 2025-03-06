@@ -17,10 +17,21 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
 
-    @Column(unique = true)
+    @Column(nullable = false)
+    private String username;
+
+
+    private String firstName;
+
+    private String lastName;
+
+    private String phone;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
     private Date createdAt = new Date();
     private Date updatedAt = new Date();

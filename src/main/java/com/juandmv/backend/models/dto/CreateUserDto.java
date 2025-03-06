@@ -17,8 +17,13 @@ import java.util.List;
 @Setter
 public class CreateUserDto {
 
-    @NotBlank(message = "El nombre es obligatorio")
-    private String name;
+    private String username;
+
+    private String firstName;
+
+    private String lastName;
+
+    private String phone;
 
     @NotBlank(message = "El correo es obligatorio")
     @Email(message = "El correo debe ser válido")
@@ -28,7 +33,6 @@ public class CreateUserDto {
     @Min(8)
     private String password;
 
-    // TODO: Implementar roles
     private List<Role> roles;
 
     @Enumerated(EnumType.STRING)

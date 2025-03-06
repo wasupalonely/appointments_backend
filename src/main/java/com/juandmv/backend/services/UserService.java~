@@ -64,10 +64,7 @@ public class UserService {
 
         createUserDto.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
         User newUser = new User();
-        newUser.setUsername(createUserDto.getUsername());
-        newUser.setFirstName(createUserDto.getFirstName());
-        newUser.setLastName(createUserDto.getLastName());
-        newUser.setPhone(createUserDto.getPhone());
+        newUser.setName(createUserDto.getName());
         newUser.setEmail(createUserDto.getEmail());
         newUser.setPassword(createUserDto.getPassword());
         newUser.setRoles(createUserDto.getRoles());

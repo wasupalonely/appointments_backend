@@ -1,5 +1,7 @@
 package com.juandmv.backend.auth;
 
+import com.juandmv.backend.auth.filter.JwtAuthenticationFilter;
+import com.juandmv.backend.auth.filter.JwtValidationFilter;
 import org.apache.catalina.filters.CorsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -41,10 +43,14 @@ public class SecurityConfig {
                         authz ->
                                 //TODO: Agregar las rutas con sus roles y validaciones
                                 authz
+                                        .requestMatchers("/auth/**").permitAll()
+                                        .requestMatchers("/v3/api-docs/**").permitAll()
+                                        .requestMatchers("/swagger-ui/**").permitAll()
+                                        //.requestMatchers("/users/**").authenticated()
                                         .anyRequest().permitAll())
                   .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-//                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
-//                .addFilter(new JwtValidationFilter(authenticationManager()))
+                //.addFilter(new JwtAuthenticationFilter(authenticationManager()))
+                //.addFilter(new JwtValidationFilter(authenticationManager()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
