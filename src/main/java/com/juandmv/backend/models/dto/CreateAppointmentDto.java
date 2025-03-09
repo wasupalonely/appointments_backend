@@ -15,6 +15,10 @@ public class CreateAppointmentDto {
     @Positive(message = "El id del paciente debe ser positivo")
     private Long patientId;
 
+    @NotNull(message = "El id del tipo de cita es obligatorio")
+    @Positive(message = "El id del tipo de cita debe ser positivo")
+    private Long appointmentTypeId;
+
     @NotNull(message = "La fecha de inicio es obligatoria")
     private Date startTime;
 

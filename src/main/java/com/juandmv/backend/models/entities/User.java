@@ -47,6 +47,14 @@ public class User {
     )
     private List<Role> roles;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "physicalLocationId", referencedColumnName = "id")
+    private PhysicalLocation physicalLocation;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "specialtyId", referencedColumnName = "id")
+    private Specialty specialty;
+
     public User() {
         this.roles = new ArrayList<>();
     }

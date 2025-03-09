@@ -23,8 +23,8 @@ public class AppointmentTypeController {
     }
 
     @GetMapping("/specialty/{specialty}")
-    public ResponseEntity<List<AppointmentType>> findBySpecialty(@PathVariable String specialty) {
-        return ResponseEntity.ok(this.appointmentTypeService.findBySpecialty(specialty));
+    public ResponseEntity<List<AppointmentType>> findBySpecialty(@PathVariable Long specialtyId) {
+        return ResponseEntity.ok(this.appointmentTypeService.findBySpecialty(specialtyId));
     }
 
     @PostMapping

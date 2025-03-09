@@ -1,0 +1,23 @@
+package com.juandmv.backend.repositories;
+
+import com.juandmv.backend.models.entities.Appointment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    List<Appointment> findByPatientId(Long patientId);
+
+    List<Appointment> findByDoctorId(Long doctorId);
+
+    @Query("SELECT a FROM Appointment a WHERE " +
+            "(:date IS NULL OR a.date = :date) AND " +
+            "(:status IS NULL OR a.status = :status) AND " +
+            "(:patientId IS NULL OR a.patient.id = :patientId)")
+    List<Appointment> findAll(
+            @Param("date") String date,
+            @Param("status") String status,
+            @Param("patientId") Long patientId);
+}
