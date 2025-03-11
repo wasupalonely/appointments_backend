@@ -1,0 +1,4 @@
+package com.juandmv.backend.repositories;
+
+public interface PhysicalLocationRepository {
+}

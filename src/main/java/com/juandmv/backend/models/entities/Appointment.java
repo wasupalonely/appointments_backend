@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,9 +19,9 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Date startTime;
+    private LocalDateTime startTime;
 
-    private Date endTime;
+    private LocalDateTime endTime;
 
     private String notes;
 
@@ -30,7 +31,7 @@ public class Appointment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AppointmentStatus type;
+    private AppointmentStatus status;
 
     @ManyToOne
     @JoinColumn(name = "patientId", referencedColumnName = "id")
@@ -49,7 +50,7 @@ public class Appointment {
     private AppointmentType appointmentType;
 
     @ManyToOne
-    @JoinColumn(name = "parent_appointment_id")
+    @JoinColumn(name = "parentAppointmentId", referencedColumnName = "id")
     private Appointment parentAppointment; // Cita principal (padre)
 
     @OneToMany(mappedBy = "parentAppointment", cascade = CascadeType.ALL, orphanRemoval = true)

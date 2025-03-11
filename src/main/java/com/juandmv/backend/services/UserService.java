@@ -34,6 +34,8 @@ public class UserService {
 
     public List<User> findByRole(String role) { return userRepository.findByRoles_Name(role); }
 
+    public List<User> findBySpecialtyId(Long specialtyId) { return userRepository.findBySpecialtyId(specialtyId); }
+
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));

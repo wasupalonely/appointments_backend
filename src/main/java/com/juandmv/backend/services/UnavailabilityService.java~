@@ -28,8 +28,8 @@ public class UnavailabilityService {
     public List<Unavailability> findByDoctorId(Long doctorId) { return unavailabilityRepository.findByDoctorId(doctorId); }
 
     public Unavailability save(CreateUnavailabilityDto createUnavailabilityDto) {
-        if (createUnavailabilityDto.getEndTime().isBefore(createUnavailabilityDto.getStartTime()) ||
-                createUnavailabilityDto.getStartTime().isAfter(createUnavailabilityDto.getEndTime())) {
+        if (createUnavailabilityDto.getEndTime().before(createUnavailabilityDto.getStartTime()) ||
+                createUnavailabilityDto.getStartTime().after(createUnavailabilityDto.getEndTime())) {
             throw new InvalidDatesRangeException("La fecha de finalización debe ser posterior a la de inicio");
         }
         Unavailability unavailability = new Unavailability();

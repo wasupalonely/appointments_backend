@@ -26,8 +26,8 @@ public class AvailabilityService {
     public List<Availability> findByDoctorId(Long doctorId) { return availabilityRepository.findByDoctorId(doctorId); }
 
     public Availability save(CreateAvailabilityDto createAvailabilityDto) {
-        if (createAvailabilityDto.getEndTime().before(createAvailabilityDto.getStartTime()) ||
-                createAvailabilityDto.getStartTime().after(createAvailabilityDto.getEndTime())) {
+        if (createAvailabilityDto.getEndTime().isBefore(createAvailabilityDto.getStartTime()) ||
+                createAvailabilityDto.getStartTime().isAfter(createAvailabilityDto.getEndTime())) {
             throw new InvalidDatesRangeException("La fecha de finalización debe ser posterior a la de inicio");
         }
         Availability availability = new Availability();

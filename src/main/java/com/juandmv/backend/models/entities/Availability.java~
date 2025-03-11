@@ -2,37 +2,41 @@ package com.juandmv.backend.models.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.DayOfWeek;
 import java.util.Date;
 
 @Entity
-@Table(name = "exam_assignments")
+@Table(name = "availabilities")
 @Getter
 @Setter
-public class ExamAssignment {
+@NoArgsConstructor
+public class Availability {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "examTypeId", referencedColumnName = "id")
-    private ExamType examType;
-
-    @ManyToOne
-    @JoinColumn(name = "patientId", referencedColumnName = "id")
-    private User patient;
-
-    @ManyToOne
     @JoinColumn(name = "doctorId", referencedColumnName = "id")
     private User doctor;
 
-    // TODO: Revisar el tipo de dato de esto
-    private boolean status = false;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DayOfWeek dayOfWeek;
 
-    private Date completedAt;
+    @Column(nullable = false)
+    private Date startTime;
+
+    @Column(nullable = false)
+    private Date endTime;
+
+    @Column(nullable = false)
+    private boolean isRecurring;
 
     private Date createdAt = new Date();
+
     private Date updatedAt = new Date();
 }

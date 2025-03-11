@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -16,10 +17,10 @@ public class CreateUnavailabilityDto {
     private Long doctorId;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @NotNull(message = "La fecha de finalización es obligatoria")
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @NotNull(message = "La razón es obligatoria")
     private String reason;

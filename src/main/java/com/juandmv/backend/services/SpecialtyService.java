@@ -1,6 +1,7 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
+import com.juandmv.backend.models.dto.CreateSpecialtyDto;
 import com.juandmv.backend.models.entities.Specialty;
 import com.juandmv.backend.repositories.SpecialtyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,5 +22,15 @@ public class SpecialtyService {
                 orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada"));
     }
 
-    public Specialty save(Specialty specialty) { return specialtyRepository.save(specialty); }
+    public Specialty save(CreateSpecialtyDto specialty) {
+        Specialty newSpecialty = new Specialty();
+        newSpecialty.setName(specialty.getName());
+        newSpecialty.setDescription(specialty.getDescription());
+        return specialtyRepository.save(newSpecialty);
+    }
+
+    public void delete(Long id) {
+        this.findById(id);
+        specialtyRepository.deleteById(id);
+    }
 }

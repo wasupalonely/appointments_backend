@@ -51,16 +51,10 @@ public class AppointmentService {
         // Validar que el usuario no tenga citas activas
         this.validateActiveAppointmentsByUser(patient);
 
-        int procedureDuration = appointmentType.getDurationInMinutes(); // Duración del procedimiento en minutos
-        int bufferMinutes = 20; // Tiempo adicional de descanso o margen
-
-        // Calcular la fecha final
-        LocalDateTime endTime = createAppointmentDto.getStartTime().plusMinutes(procedureDuration + bufferMinutes);
-
         Appointment appointment = new Appointment();
         appointment.setPatient(patient);
         appointment.setStartTime(createAppointmentDto.getStartTime());
-        appointment.setEndTime(endTime);
+        appointment.setEndTime(createAppointmentDto.getStartTime() + );
         appointment.setNotes(createAppointmentDto.getNotes());
         appointment.setAppointmentType(appointmentType);
         appointment.setStatus(AppointmentStatus.PENDING);

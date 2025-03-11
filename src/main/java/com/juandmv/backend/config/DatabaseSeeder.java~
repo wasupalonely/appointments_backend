@@ -2,6 +2,7 @@ package com.juandmv.backend.config;
 
 import com.juandmv.backend.models.entities.Role;
 import com.juandmv.backend.repositories.RoleRepository;
+import com.juandmv.backend.repositories.SpecialtyRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,9 +12,11 @@ import java.util.List;
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
+    private final SpecialtyRepository specialtyRepository;
 
     public DatabaseSeeder(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
+        this.specialtyRepository = specialtyRepository;
     }
 
     @Override
@@ -21,11 +24,23 @@ public class DatabaseSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (roleRepository.count() == 0) {  // Evita duplicados
             Role admin = new Role("ROLE_ADMIN");
-            Role user = new Role("USER");
+            Role user = new Role("ROLE_USER");
+            Role doctor = new Role("ROLE_DOCTOR");
 
-            roleRepository.saveAll(List.of(admin, user));
+            roleRepository.saveAll(List.of(admin, user, doctor));
             System.out.println("Roles insertados correctamente.");
         }
+
+        if (specialtyRepository.count() == 0) {
+            List<String> specialties = List.of(
+                "Medicina general",
+                "Pediatria",
+                "Odontologia",
+                "Oftalmologia"
+            );
+        }
+
+        // TODO: Agregar los tipos de citas y tipos de exámenes
     }
 }
 

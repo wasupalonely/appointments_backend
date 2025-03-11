@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -22,10 +22,10 @@ public class CreateAvailabilityDto {
     private DayOfWeek dayOfWeek;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @NotNull(message = "La recurrencia es obligatorio")
     private boolean isRecurring;

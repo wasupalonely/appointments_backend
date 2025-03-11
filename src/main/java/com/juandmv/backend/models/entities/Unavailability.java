@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -21,10 +22,10 @@ public class Unavailability {
     private User doctor;
 
     @Column(nullable = false)
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @Column(nullable = false)
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @Column(nullable = false)
     private String reason;
