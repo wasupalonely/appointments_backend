@@ -28,10 +28,4 @@ public class PhysicalLocationService {
         newPhysicalLocation.setAddress(physicalLocation.getAddress());
         return physicalLocationRepository.save(newPhysicalLocation);
     }
-
-    public PhysicalLocation delete(Long id) {
-        PhysicalLocation physicalLocation = findById(id);
-        physicalLocation.setActive(false);
-        return physicalLocationRepository.save(physicalLocation);
-    }
 }

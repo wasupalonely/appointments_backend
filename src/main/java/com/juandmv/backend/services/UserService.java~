@@ -1,7 +1,6 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.enums.Roles;
-import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.EmailAlreadyExistsException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.models.dto.CreateAvailabilityDto;
@@ -89,13 +88,13 @@ public class UserService {
 
         if (createUserDto.getRole() == Roles.DOCTOR) {
             if (createUserDto.getSpecialtyId() == null) {
-                throw new BadRequestException("El doctor debe tener una especialidad asignada");
+                throw new IllegalArgumentException("El doctor debe tener una especialidad asignada");
             }
             Specialty specialty = this.specialtyService.findById(createUserDto.getSpecialtyId());
             newUser.setSpecialty(specialty);
 
             if (createUserDto.getPhysicalLocationId() == null) {
-                throw new BadRequestException("El doctor debe tener una ubicación asignada");
+                throw new IllegalArgumentException("El doctor debe tener una ubicación asignada");
             }
             PhysicalLocation physicalLocation = this.physicalLocationService.findById(createUserDto.getPhysicalLocationId());
             newUser.setPhysicalLocation(physicalLocation);

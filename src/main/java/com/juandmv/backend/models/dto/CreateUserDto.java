@@ -40,4 +40,11 @@ public class CreateUserDto {
 
     @Enumerated(EnumType.STRING)
     private Roles role;
+
+    // USAR PARA MÉDICOS
+    private Long specialtyId;
+
+    private boolean defaultSchedule = false;
+
+    private Long physicalLocationId;
 }

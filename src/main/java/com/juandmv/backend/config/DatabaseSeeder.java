@@ -2,23 +2,35 @@ package com.juandmv.backend.config;
 
 import com.juandmv.backend.models.entities.Role;
 import com.juandmv.backend.models.entities.Specialty;
+import com.juandmv.backend.models.entities.User;
 import com.juandmv.backend.repositories.RoleRepository;
 import com.juandmv.backend.repositories.SpecialtyRepository;
+import com.juandmv.backend.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
     private final SpecialtyRepository specialtyRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public DatabaseSeeder(RoleRepository roleRepository, SpecialtyRepository specialtyRepository) {
+    public DatabaseSeeder(RoleRepository roleRepository,
+                          SpecialtyRepository specialtyRepository,
+                          UserRepository userRepository,
+                          PasswordEncoder passwordEncoder
+    ) {
         this.roleRepository = roleRepository;
         this.specialtyRepository = specialtyRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -49,6 +61,25 @@ public class DatabaseSeeder implements CommandLineRunner {
                 specialtyRepository.save(newSpecialty);
             });
             System.out.println("Especialidades insertadas correctamente.");
+        }
+
+        if (userRepository.count() == 0) {
+            Optional<Role> userRole = roleRepository.findByName("ROLE_ADMIN");
+
+            if (userRole.isPresent()) {
+                User userDto = new User();
+                userDto.setRoles(List.of(userRole.get()));
+                userDto.setFirstName("Admin");
+                userDto.setLastName("Admin");
+                userDto.setUsername("admin");
+                userDto.setEmail("admin@admin.com");
+                userDto.setPassword(passwordEncoder.encode("admin123"));
+                userDto.setPhone("1234567890");
+                this.userRepository.save(userDto);
+
+                System.out.println("Usuario admin insertado correctamente.");
+            }
+
         }
 
         // TODO: Agregar los tipos de citas y tipos de exámenes
