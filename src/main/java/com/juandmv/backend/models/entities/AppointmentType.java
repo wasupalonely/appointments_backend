@@ -19,12 +19,12 @@ public class AppointmentType {
     private Long id;
 
     @Column(nullable = false)
-    private String title;
+    private String name;
 
     @Column(nullable = false)
     private Integer durationInMinutes;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "specialtyId", referencedColumnName = "id")
     private Specialty specialty;
 

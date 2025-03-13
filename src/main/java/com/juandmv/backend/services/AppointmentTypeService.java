@@ -33,7 +33,7 @@ public class AppointmentTypeService {
         AppointmentType newAppointmentType = new AppointmentType();
         Specialty specialty = this.specialtyService.findById(appointmentType.getSpecialtyId());
 
-        newAppointmentType.setTitle(appointmentType.getName());
+        newAppointmentType.setName(appointmentType.getName());
         newAppointmentType.setDurationInMinutes(appointmentType.getDurationInMinutes());
         newAppointmentType.setSpecialty(specialty);
         newAppointmentType.setIsGeneral(appointmentType.getIsGeneral());
