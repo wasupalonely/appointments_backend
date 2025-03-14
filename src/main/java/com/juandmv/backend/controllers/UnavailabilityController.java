@@ -5,6 +5,8 @@ import com.juandmv.backend.models.entities.Unavailability;
 import com.juandmv.backend.services.UnavailabilityService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,11 +19,17 @@ public class UnavailabilityController {
     private UnavailabilityService unavailabilityService;
 
     @GetMapping
-    public List<Unavailability> findAll() { return unavailabilityService.findAll(); }
+    public ResponseEntity<List<Unavailability>> findAll() {
+        return ResponseEntity.ok(this.unavailabilityService.findAll());
+    }
 
     @GetMapping("/doctor/{id}")
-    public List<Unavailability> findByDoctorId(@PathVariable Long id) { return unavailabilityService.findByDoctorId(id); }
+    public ResponseEntity<List<Unavailability>> findByDoctorId(@PathVariable Long id) {
+        return ResponseEntity.ok(this.unavailabilityService.findByDoctorId(id));
+    }
 
     @PostMapping
-    public Unavailability save(@Valid @RequestBody CreateUnavailabilityDto unavailability) { return unavailabilityService.save(unavailability); }
+    public ResponseEntity<Unavailability> save(@Valid @RequestBody CreateUnavailabilityDto unavailability) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.unavailabilityService.save(unavailability));
+    }
 }

@@ -1,9 +1,12 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
+import com.juandmv.backend.mappers.SpecialtyMapper;
 import com.juandmv.backend.models.dto.CreateSpecialtyDto;
+import com.juandmv.backend.models.dto.UpdateSpecialtyDto;
 import com.juandmv.backend.models.entities.Specialty;
 import com.juandmv.backend.repositories.SpecialtyRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,9 @@ public class SpecialtyService {
 
     @Autowired
     private SpecialtyRepository specialtyRepository;
+
+    @Autowired
+    private SpecialtyMapper specialtyMapper;
 
     public List<Specialty> findAll() { return specialtyRepository.findAll(); }
 
@@ -27,6 +33,14 @@ public class SpecialtyService {
         newSpecialty.setName(specialty.getName());
         newSpecialty.setDescription(specialty.getDescription());
         return specialtyRepository.save(newSpecialty);
+    }
+
+    public Specialty update(Long id, @Valid UpdateSpecialtyDto specialty) {
+        Specialty specialtyToUpdate = this.findById(id);
+
+        specialtyMapper.updateSpecialtyFromDto(specialty, specialtyToUpdate);
+
+        return specialtyRepository.save(specialtyToUpdate);
     }
 
     public void delete(Long id) {

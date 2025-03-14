@@ -94,9 +94,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .map(specialty -> Map.entry(specialty.getName(), specialty))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            System.out.println("Especialidades disponibles:");
-            specialties.forEach((key, value) -> System.out.println(key + " -> " + value.getDescription()));
-
             List<Map<String, Object>> types = List.of(
                     Map.of("name", "Consulta odontológica general",
                             "specialty", specialties.get("Odontologia"),

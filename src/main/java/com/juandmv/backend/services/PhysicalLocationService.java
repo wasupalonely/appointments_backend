@@ -1,9 +1,13 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
+import com.juandmv.backend.mappers.PhysicalLocationMapper;
 import com.juandmv.backend.models.dto.CreatePhysicalLocationDto;
+import com.juandmv.backend.models.dto.UpdatePhysicalLocationDto;
 import com.juandmv.backend.models.entities.PhysicalLocation;
 import com.juandmv.backend.repositories.PhysicalLocationRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +19,9 @@ public class PhysicalLocationService {
     @Autowired
     private PhysicalLocationRepository physicalLocationRepository;
 
+    @Autowired
+    private PhysicalLocationMapper physicalLocationMapper;
+
     public List<PhysicalLocation> findAll() { return physicalLocationRepository.findAll(); }
 
     public PhysicalLocation findById(Long id) {
@@ -22,11 +29,16 @@ public class PhysicalLocationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ubicación no encontrada"));
     }
 
-    public PhysicalLocation save(CreatePhysicalLocationDto physicalLocation) {
-        PhysicalLocation newPhysicalLocation = new PhysicalLocation();
-        newPhysicalLocation.setName(physicalLocation.getName());
-        newPhysicalLocation.setAddress(physicalLocation.getAddress());
-        return physicalLocationRepository.save(newPhysicalLocation);
+    public PhysicalLocation save(@Valid CreatePhysicalLocationDto physicalLocation) {
+        return physicalLocationRepository.save(physicalLocationMapper.toEntity(physicalLocation));
+    }
+
+    @Transactional
+    public PhysicalLocation update(Long id, @Valid UpdatePhysicalLocationDto physicalLocation) {
+        PhysicalLocation location = findById(id);
+
+        physicalLocationMapper.updatePhysicalLocationFromDto(physicalLocation, location);
+        return physicalLocationRepository.save(location);
     }
 
     public PhysicalLocation delete(Long id) {

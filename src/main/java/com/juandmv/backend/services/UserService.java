@@ -4,13 +4,16 @@ import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.EmailAlreadyExistsException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
+import com.juandmv.backend.mappers.UserMapper;
 import com.juandmv.backend.models.dto.CreateAvailabilityDto;
 import com.juandmv.backend.models.dto.CreateUserDto;
+import com.juandmv.backend.models.dto.UpdateUserDto;
 import com.juandmv.backend.models.entities.*;
 import com.juandmv.backend.repositories.AvailabilityRepository;
 import com.juandmv.backend.repositories.RoleRepository;
 import com.juandmv.backend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,6 +45,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserMapper userMapper;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -108,6 +114,20 @@ public class UserService {
         }
 
         return userSaved;
+    }
+
+    @Transactional
+    public User update(Long id, @Valid UpdateUserDto updateUserDto) {
+        User existingUser = this.findById(id);
+
+        User emailValidation = this.findByEmail(updateUserDto.getEmail()).orElse(null);
+        if (emailValidation != null && !emailValidation.getId().equals(id)) {
+            throw new EmailAlreadyExistsException("El correo ya está registrado");
+        }
+
+        userMapper.updateUserFromDto(updateUserDto, existingUser);
+
+        return userRepository.save(existingUser);
     }
 
 

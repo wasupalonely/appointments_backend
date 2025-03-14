@@ -1,10 +1,12 @@
 package com.juandmv.backend.controllers;
 
 import com.juandmv.backend.models.dto.CreatePhysicalLocationDto;
+import com.juandmv.backend.models.dto.UpdatePhysicalLocationDto;
 import com.juandmv.backend.models.entities.PhysicalLocation;
 import com.juandmv.backend.services.PhysicalLocationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,13 +19,27 @@ public class PhysicalLocationController {
     private PhysicalLocationService physicalLocationService;
 
     @GetMapping
-    public List<PhysicalLocation> findAll() { return physicalLocationService.findAll(); }
+    public ResponseEntity<List<PhysicalLocation>> findAll() {
+        return ResponseEntity.ok(this.physicalLocationService.findAll());
+    }
 
     @GetMapping("/{id}")
-    public PhysicalLocation findById(@PathVariable Long id) { return physicalLocationService.findById(id); }
+    public ResponseEntity<PhysicalLocation> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(this.physicalLocationService.findById(id));
+    }
 
     @PostMapping
-    public PhysicalLocation save(@Valid @RequestBody CreatePhysicalLocationDto physicalLocation) {
-        return physicalLocationService.save(physicalLocation);
+    public ResponseEntity<PhysicalLocation> save(@Valid @RequestBody CreatePhysicalLocationDto physicalLocation) {
+        return ResponseEntity.ok(this.physicalLocationService.save(physicalLocation));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PhysicalLocation> update(@PathVariable Long id, @Valid @RequestBody UpdatePhysicalLocationDto physicalLocation) {
+        return ResponseEntity.ok(this.physicalLocationService.update(id, physicalLocation));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        return ResponseEntity.noContent().build();
     }
 }

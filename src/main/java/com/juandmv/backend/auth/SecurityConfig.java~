@@ -43,19 +43,13 @@ public class SecurityConfig {
                         authz ->
                                 //TODO: Agregar las rutas con sus roles y validaciones
                                 authz
-                                        // AUTH
                                         .requestMatchers("/auth/**").permitAll()
-
-                                        // DOCS
                                         .requestMatchers("/v3/api-docs/**").permitAll()
                                         .requestMatchers("/swagger-ui/**").permitAll()
-
+                                        .requestMatchers("/users/**").hasRole("ADMIN")
                                         .requestMatchers("/appointments/**").authenticated()
-                                        .requestMatchers("/users/**").authenticated()
-
-                                        // ONLY ADMIN
                                         .requestMatchers("/appointment-types/**").hasRole("ADMIN")
-                                        .requestMatchers("/physical-locations/**").hasRole("ADMIN")
+                                        .requestMatchers("/exam-types/**").hasRole("ADMIN")
                                         .anyRequest().authenticated())
                   .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))
