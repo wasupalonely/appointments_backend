@@ -1,5 +1,6 @@
 package com.juandmv.backend.models.dto;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class CreateAppointmentDto {
     private Long patientId;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
+    @Future(message = "La fecha de inicio debe ser futura")
     private LocalDateTime startTime;
 
     private String notes;

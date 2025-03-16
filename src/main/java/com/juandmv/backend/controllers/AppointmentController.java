@@ -1,6 +1,8 @@
 package com.juandmv.backend.controllers;
 
 import com.juandmv.backend.models.dto.CreateAppointmentDto;
+import com.juandmv.backend.models.dto.UpdateAppointmentDto;
+import com.juandmv.backend.models.dto.UpdateAppointmentTypeDto;
 import com.juandmv.backend.models.entities.Appointment;
 import com.juandmv.backend.services.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/appointments")
@@ -34,7 +37,7 @@ public class AppointmentController {
     @ApiResponse(responseCode = "200", description = "Citas obtenidas correctamente")
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<Appointment>> findByPatientId(@Parameter(description = "Id del paciente", example = "1")
-                                                 @PathVariable Long patientId) {
+                                                             @PathVariable Long patientId) {
         return ResponseEntity.ok(this.appointmentService.findByPatientId(patientId));
     }
 
@@ -42,7 +45,7 @@ public class AppointmentController {
     @ApiResponse(responseCode = "200", description = "Citas obtenidas correctamente")
     @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<List<Appointment>> findByDoctorId(@Parameter(description = "Id del paciente", example = "1")
-                                                @PathVariable Long doctorId) {
+                                                            @PathVariable Long doctorId) {
         return ResponseEntity.ok(this.appointmentService.findByDoctorId(doctorId));
     }
 
@@ -50,7 +53,17 @@ public class AppointmentController {
     @ApiResponse(responseCode = "201", description = "Cita creada correctamente")
     @PostMapping
     public ResponseEntity<Appointment> save(@Parameter(description = "Cita a crear", required = true)
-                                @Valid @RequestBody CreateAppointmentDto createAppointmentDto) {
+                                            @Valid @RequestBody CreateAppointmentDto createAppointmentDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.appointmentService.save(createAppointmentDto));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Appointment> update(@PathVariable Long id, @Valid @RequestBody UpdateAppointmentDto updateAppointmentDto) {
+        return ResponseEntity.ok(this.appointmentService.update(id, updateAppointmentDto));
+    }
+
+    @PatchMapping("/{appointmentId}/cancel/{userId}")
+    public ResponseEntity<Map<String, Object>> cancel(@PathVariable Long appointmentId, @PathVariable Long userId) {
+        return ResponseEntity.ok(this.appointmentService.cancelAppointment(appointmentId, userId));
     }
 }

@@ -1,10 +1,13 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
+import com.juandmv.backend.mappers.AppointmentTypeMapper;
 import com.juandmv.backend.models.dto.CreateAppointmentTypeDto;
+import com.juandmv.backend.models.dto.UpdateAppointmentTypeDto;
 import com.juandmv.backend.models.entities.AppointmentType;
 import com.juandmv.backend.models.entities.Specialty;
 import com.juandmv.backend.repositories.AppointmentTypeRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,9 @@ public class AppointmentTypeService {
 
     @Autowired
     private SpecialtyService specialtyService;
+
+    @Autowired
+    private AppointmentTypeMapper appointmentTypeMapper;
 
     public List<AppointmentType> findAll() { return appointmentTypeRepository.findAll(); }
 
@@ -41,14 +47,13 @@ public class AppointmentTypeService {
         return appointmentTypeRepository.save(newAppointmentType);
     }
 
-    // TODO: Implementar actualización
-//    public AppointmentType update(Long id, CreateAppointmentTypeDto appointmentType) {
-//        AppointmentType updateAppointmentType = this.findById(id);
-//
-//        updateAppointmentType.setTitle(appointmentType.getTitle());
-//
-//        return appointmentTypeRepository.save(updateAppointmentType);
-//    }
+    public AppointmentType update(Long id, @Valid UpdateAppointmentTypeDto appointmentType) {
+        AppointmentType appointmentTypeToUpdate = this.findById(id);
+
+        appointmentTypeMapper.updateAppointmentTypeFromDto(appointmentType, appointmentTypeToUpdate);
+
+        return appointmentTypeRepository.save(appointmentTypeToUpdate);
+    }
 
     public void delete(Long id) {
         this.findById(id);

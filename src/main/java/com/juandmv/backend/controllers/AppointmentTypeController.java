@@ -1,6 +1,7 @@
 package com.juandmv.backend.controllers;
 
 import com.juandmv.backend.models.dto.CreateAppointmentTypeDto;
+import com.juandmv.backend.models.dto.UpdateAppointmentTypeDto;
 import com.juandmv.backend.models.entities.AppointmentType;
 import com.juandmv.backend.services.AppointmentTypeService;
 import jakarta.validation.Valid;
@@ -30,6 +31,11 @@ public class AppointmentTypeController {
     @PostMapping
     public ResponseEntity<AppointmentType> save(@Valid @RequestBody CreateAppointmentTypeDto appointmentType) {
         return ResponseEntity.ok(this.appointmentTypeService.save(appointmentType));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AppointmentType> update(@PathVariable Long id, @Valid @RequestBody UpdateAppointmentTypeDto appointmentType) {
+        return ResponseEntity.ok(this.appointmentTypeService.update(id, appointmentType));
     }
 
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.juandmv.backend.repositories;
 
+import com.juandmv.backend.enums.AppointmentStatus;
 import com.juandmv.backend.models.entities.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,6 +10,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByPatientId(Long patientId);
 
     List<Appointment> findByDoctorId(Long doctorId);
+
+    List<Appointment> findByDoctorIdAndStatusNotIn(Long doctorId, List<AppointmentStatus> statuses);
 
     List<Appointment> findByPhysicalLocationId(Long physicalLocationId);
 
