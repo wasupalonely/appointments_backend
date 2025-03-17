@@ -1,5 +1,6 @@
 package com.juandmv.backend.models.entities;
 
+import com.juandmv.backend.enums.ReminderType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,14 +23,22 @@ public class Reminder {
     @JoinColumn(name = "appointmentId", referencedColumnName = "id")
     private Appointment appointment;
 
-    // TODO: Make this an enum
+    @ManyToOne
+    @JoinColumn(name = "receiverId", referencedColumnName = "id")
+    private User receiver;
+
     @Column(nullable = false)
-    private String reminderType;
+    private ReminderType reminderType;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String message;
 
     private Date sentAt = new Date();
 
-    // TODO: Validate the type of this!
-    private boolean status;
+    private boolean isRead = false;
 
     private Date createdAt = new Date();
     private Date updatedAt = new Date();

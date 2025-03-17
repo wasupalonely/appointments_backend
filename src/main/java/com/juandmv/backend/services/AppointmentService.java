@@ -2,6 +2,7 @@ package com.juandmv.backend.services;
 
 import com.juandmv.backend.enums.AppointmentStatus;
 import com.juandmv.backend.enums.Roles;
+import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.exceptions.ScheduleConflictException;
 import com.juandmv.backend.models.dto.CreateAppointmentDto;
@@ -41,6 +42,12 @@ public class AppointmentService {
 
     public List<Appointment> findAll() { return appointmentRepository.findAll(); }
 
+    public List<Appointment> findAppointmentsByFilters(LocalDateTime startDate, LocalDateTime endDate,
+                                                       AppointmentStatus status, Long physicalLocationId) {
+
+        return appointmentRepository.findAppointmentsByFilters(startDate, endDate, status, physicalLocationId);
+    }
+
     public List<Appointment> findByPatientId(Long patientId) { return appointmentRepository.findByPatientId(patientId); }
 
     public List<Appointment> findByDoctorId(Long doctorId) { return appointmentRepository.findByDoctorId(doctorId); }
@@ -52,6 +59,7 @@ public class AppointmentService {
     @Transactional
     public Appointment save(CreateAppointmentDto createAppointmentDto) {
         AppointmentType appointmentType = appointmentTypeService.findById(createAppointmentDto.getAppointmentTypeId());
+
         User patient = userService.findById(createAppointmentDto.getPatientId());
 
         // Validar que el usuario no tenga citas activas
@@ -74,6 +82,8 @@ public class AppointmentService {
         // Asignar un doctor disponible
         User doctor = getAppointmentDoctor(appointment);
         appointment.setDoctor(doctor);
+
+        appointment.setPhysicalLocation(doctor.getPhysicalLocation());
 
         // Manejar citas derivadas
         if (createAppointmentDto.getParentAppointmentId() != null) {

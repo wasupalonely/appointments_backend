@@ -15,35 +15,35 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
-    private String remitente;
+    private String sender;
 
     /**
-     * Envía un email con contenido HTML bien formateado
+     * Sends an email with well-formatted HTML content
      *
-     * @param destinatario Email del destinatario
-     * @param asunto       Asunto del correo
-     * @param nombre       Nombre del destinatario
-     * @param mensaje      Mensaje principal
-     * @throws MessagingException si hay problemas al enviar el correo
+     * @param recipient  Email address of the recipient
+     * @param subject    Email subject
+     * @param name       Recipient's name
+     * @param message    Main message content
+     * @throws MessagingException if there are problems sending the email
      */
-    public void sendEmail(String destinatario, String asunto, String nombre, String mensaje) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    public void sendEmail(String recipient, String subject, String name, String message) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-        helper.setFrom(remitente);
-        helper.setTo(destinatario);
-        helper.setSubject(asunto);
+        helper.setFrom(sender);
+        helper.setTo(recipient);
+        helper.setSubject(subject);
 
-        String contenidoHtml = generarPlantillaHtml(nombre, mensaje);
-        helper.setText(contenidoHtml, true);
+        String htmlContent = generateHtmlTemplate(name, message);
+        helper.setText(htmlContent, true);
 
-        mailSender.send(message);
+        mailSender.send(mimeMessage);
     }
 
     /**
-     * Genera una plantilla HTML atractiva para el correo
+     * Generates an attractive HTML template for the email
      */
-    private String generarPlantillaHtml(String nombre, String mensaje) {
+    private String generateHtmlTemplate(String name, String message) {
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
@@ -64,19 +64,19 @@ public class EmailService {
                 "<body>\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"header\">\n" +
-                "            <h1>Notificación</h1>\n" +
+                "            <h1>Notification</h1>\n" +
                 "        </div>\n" +
                 "        <div class=\"content\">\n" +
-                "            <p>Hola <strong>" + nombre + "</strong>,</p>\n" +
+                "            <p>Hola, <strong>" + name + "</strong>,</p>\n" +
                 "            <div class=\"message\">\n" +
-                "                <p>" + mensaje + "</p>\n" +
+                "                <p>" + message + "</p>\n" +
                 "            </div>\n" +
                 "            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>\n" +
-                "            <p>Saludos cordiales,<br>El equipo de " + obtenerNombreEmpresa() + "</p>\n" +
+                "            <p>Best regards,<br>The " + getCompanyName() + " Team</p>\n" +
                 "        </div>\n" +
                 "        <div class=\"footer\">\n" +
-                "            <p>Este es un mensaje automático. Por favor no responda a este correo.</p>\n" +
-                "            <p>&copy; " + java.time.Year.now().getValue() + " " + obtenerNombreEmpresa() + ". Todos los derechos reservados.</p>\n" +
+                "            <p>This is an automated message. Please do not reply to this email.</p>\n" +
+                "            <p>&copy; " + java.time.Year.now().getValue() + " " + getCompanyName() + ". All rights reserved.</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "</body>\n" +
@@ -84,9 +84,9 @@ public class EmailService {
     }
 
     /**
-     * Retorna el nombre de la empresa para usar en la plantilla
+     * Returns the company name to use in the template
      */
-    private String obtenerNombreEmpresa() {
+    private String getCompanyName() {
         return "MediTec";
     }
 }

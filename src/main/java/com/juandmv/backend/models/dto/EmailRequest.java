@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmailRequest {
-    private String destinatario;
-    private String asunto;
-    private String nombre;
-    private String mensaje;
+    private String receiver;
+    private String subject;
+    private String name;
+    private String message;
 }

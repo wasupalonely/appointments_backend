@@ -1,5 +1,6 @@
 package com.juandmv.backend.controllers;
 
+import com.juandmv.backend.enums.AppointmentStatus;
 import com.juandmv.backend.models.dto.CreateAppointmentDto;
 import com.juandmv.backend.models.dto.UpdateAppointmentDto;
 import com.juandmv.backend.models.dto.UpdateAppointmentTypeDto;
@@ -11,10 +12,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +29,28 @@ public class AppointmentController {
     @Autowired
     private AppointmentService appointmentService;
 
-    @Operation(summary = "Obtener las citas", description = "Devuelve todas las citas")
+    @Operation(summary = "Obtener las citas filtradas", description = "Devuelve las citas según los filtros aplicados")
     @ApiResponse(responseCode = "200", description = "Citas obtenidas correctamente")
     @GetMapping
-    public ResponseEntity<List<Appointment>> findAll() {
-        return ResponseEntity.ok(this.appointmentService.findAll());
+    public ResponseEntity<List<Appointment>> findAll(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) AppointmentStatus status,
+            @RequestParam(required = false) Long physicalLocationId) {
+
+        if (startDate == null && endDate == null && status == null && physicalLocationId == null) {
+            return ResponseEntity.ok(this.appointmentService.findAll());
+        }
+
+        return ResponseEntity.ok(this.appointmentService.findAppointmentsByFilters(startDate, endDate, status, physicalLocationId));
     }
+
+//    @Operation(summary = "Obtener las citas", description = "Devuelve todas las citas")
+//    @ApiResponse(responseCode = "200", description = "Citas obtenidas correctamente")
+//    @GetMapping
+//    public ResponseEntity<List<Appointment>> findAll() {
+//        return ResponseEntity.ok(this.appointmentService.findAll());
+//    }
 
     @Operation(summary = "Obtener las citas por paciente", description = "Devuelve todas las citas de un paciente")
     @ApiResponse(responseCode = "200", description = "Citas obtenidas correctamente")
