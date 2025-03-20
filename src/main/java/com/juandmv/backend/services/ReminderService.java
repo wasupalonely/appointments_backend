@@ -7,6 +7,7 @@ import com.juandmv.backend.models.dto.UpdateReminderDto;
 import com.juandmv.backend.models.entities.Appointment;
 import com.juandmv.backend.models.entities.Reminder;
 import com.juandmv.backend.models.entities.User;
+import com.juandmv.backend.repositories.AppointmentRepository;
 import com.juandmv.backend.repositories.ReminderRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,10 @@ public class ReminderService {
     private ReminderRepository reminderRepository;
 
     @Autowired
-    private UserService userService;
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
-    private AppointmentService appointmentService;
+    private UserService userService;
 
     @Autowired
     private ReminderMapper reminderMapper;
@@ -40,7 +41,8 @@ public class ReminderService {
             .orElseThrow(() -> new ResourceNotFoundException("Reminder not found")); }
 
     public Reminder save(@Valid CreateReminderDto reminder) {
-        Appointment appointment = this.appointmentService.findById(reminder.getAppointmentId());
+        Appointment appointment = this.appointmentRepository.findById(reminder.getAppointmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
         User receiver = this.userService.findById(reminder.getReceiverId());
 
         Reminder newReminder = new Reminder();

@@ -1,5 +1,6 @@
 package com.juandmv.backend.services;
 
+import com.juandmv.backend.models.dto.EmailRequest;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,21 @@ public class EmailService {
         helper.setText(htmlContent, true);
 
         mailSender.send(mimeMessage);
+    }
+
+    public void send(EmailRequest emailRequest) {
+        try {
+            this.sendEmail(
+                    emailRequest.getReceiver(),
+                    emailRequest.getSubject(),
+                    emailRequest.getName(),
+                    emailRequest.getMessage()
+            );
+        } catch (MessagingException e) {
+            System.out.println("Failed to send email: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Unexpected error when sending email: " + e.getMessage());
+        }
     }
 
     /**

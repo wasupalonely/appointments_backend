@@ -50,4 +50,9 @@ public class AvailabilityService {
 
         return availabilityRepository.save(availability);
     }
+
+    public void delete(Long id) {
+        this.findById(id);
+        availabilityRepository.deleteById(id);
+    }
 }

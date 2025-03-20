@@ -30,4 +30,10 @@ public class AvailabilityController {
     public ResponseEntity<Availability> save(@Valid @RequestBody CreateAvailabilityDto availability) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.availabilityService.save(availability));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        this.availabilityService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

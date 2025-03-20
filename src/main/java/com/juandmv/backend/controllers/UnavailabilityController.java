@@ -32,4 +32,10 @@ public class UnavailabilityController {
     public ResponseEntity<Unavailability> save(@Valid @RequestBody CreateUnavailabilityDto unavailability) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.unavailabilityService.save(unavailability));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        this.unavailabilityService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
