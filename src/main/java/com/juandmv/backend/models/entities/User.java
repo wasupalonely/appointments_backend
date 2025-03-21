@@ -58,4 +58,8 @@ public class User {
     public User() {
         this.roles = new ArrayList<>();
     }
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
+    }
 }

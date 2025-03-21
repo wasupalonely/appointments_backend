@@ -28,6 +28,7 @@ public class Reminder {
     private User receiver;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ReminderType reminderType;
 
     @Column(nullable = false)

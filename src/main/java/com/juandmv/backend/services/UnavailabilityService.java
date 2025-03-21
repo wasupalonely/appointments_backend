@@ -39,4 +39,9 @@ public class UnavailabilityService {
 
         return unavailabilityRepository.save(unavailability);
     }
+
+    public void delete(Long id) {
+        this.findById(id);
+        unavailabilityRepository.deleteById(id);
+    }
 }

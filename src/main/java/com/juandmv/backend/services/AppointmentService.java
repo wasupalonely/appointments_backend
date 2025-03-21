@@ -1,20 +1,28 @@
 package com.juandmv.backend.services;
 
 import com.juandmv.backend.enums.AppointmentStatus;
+import com.juandmv.backend.enums.ReminderType;
 import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.exceptions.ScheduleConflictException;
 import com.juandmv.backend.models.dto.CreateAppointmentDto;
+import com.juandmv.backend.models.dto.CreateReminderDto;
+import com.juandmv.backend.models.dto.EmailRequest;
 import com.juandmv.backend.models.dto.UpdateAppointmentDto;
 import com.juandmv.backend.models.entities.*;
 import com.juandmv.backend.repositories.AppointmentRepository;
+import com.juandmv.backend.utils.Utils;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -34,6 +42,12 @@ public class AppointmentService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private ReminderService reminderService;
 
     public Appointment findById(Long id) {
         return appointmentRepository.findById(id)
@@ -85,6 +99,8 @@ public class AppointmentService {
 
         appointment.setPhysicalLocation(doctor.getPhysicalLocation());
 
+        
+
         // Manejar citas derivadas
         if (createAppointmentDto.getParentAppointmentId() != null) {
             Appointment parentAppointment = this.findById(createAppointmentDto.getParentAppointmentId());
@@ -93,7 +109,48 @@ public class AppointmentService {
             appointmentRepository.save(parentAppointment);
         }
 
-        return appointmentRepository.save(appointment);
+        Appointment appointmentSaved = appointmentRepository.save(appointment);
+
+        // Enviar notificaciones al usuario y al doctor
+        EmailRequest patientEmailRequest = new EmailRequest();
+        patientEmailRequest.setReceiver(patient.getEmail());
+        patientEmailRequest.setName(patient.getFullName());
+        patientEmailRequest.setSubject("Cita agendada");
+        patientEmailRequest.setMessage("Se ha agendado una cita con el profesional " +
+                doctor.getFullName() + " para el dia " +
+                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+        emailService.send(patientEmailRequest);
+
+        CreateReminderDto createPatientReminderDto = new CreateReminderDto();
+        createPatientReminderDto.setTitle("Cita agendada");
+        createPatientReminderDto.setAppointmentId(appointmentSaved.getId());
+        createPatientReminderDto.setMessage("Se ha agendado una cita con el profesional " +
+                doctor.getFullName() + " para el dia " + createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+        createPatientReminderDto.setReceiverId(patient.getId());
+        createPatientReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+
+        this.reminderService.save(createPatientReminderDto);
+
+        EmailRequest doctorEmailRequest = new EmailRequest();
+        doctorEmailRequest.setReceiver(doctor.getEmail());
+        doctorEmailRequest.setName(doctor.getFullName());
+        doctorEmailRequest.setSubject("Cita agendada");
+        doctorEmailRequest.setMessage("Se ha agendado una cita con el paciente para el día " +
+                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+        emailService.send(doctorEmailRequest);
+
+        // TODO: Revisar si este método se puede realizar en el método de enviar el email directamente
+        CreateReminderDto createDoctorReminderDto = new CreateReminderDto();
+        createDoctorReminderDto.setTitle("Cita asignada");
+        createDoctorReminderDto.setAppointmentId(appointmentSaved.getId());
+        createDoctorReminderDto.setMessage("Se ha agendado una cita con el paciente para el día " +
+                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+        createDoctorReminderDto.setReceiverId(appointmentSaved.getDoctor().getId());
+        createDoctorReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+
+        this.reminderService.save(createDoctorReminderDto);
+        
+        return appointmentSaved;
     }
 
     @Transactional
@@ -113,17 +170,30 @@ public class AppointmentService {
             appointment.setStartTime(updateAppointmentDto.getStartTime());
             appointment.setEndTime(calculateEndTime(appointment));
             appointment.setStatus(AppointmentStatus.RE_SCHEDULED);
-            // TODO: Si el doctor es el mismo, se envía notificación al doctor de que se ha cambiado la cita
             shouldReassignDoctor = shouldReassignDoctor || !isDoctorAvailable(appointment.getDoctor(),
                     appointment.getStartTime(),
                     appointment.getEndTime());
         }
 
+        EmailRequest emailRequest = new EmailRequest();
+
         // Reasignar doctor si es necesario
         if (shouldReassignDoctor) {
-            // TODO: Se envía notificación al doctor nuevo
             appointment.setDoctor(getAppointmentDoctor(appointment));
         }
+
+        emailRequest.setReceiver(appointment.getDoctor().getEmail());
+        emailRequest.setName(appointment.getPatient().getFullName());
+        emailRequest.setSubject(shouldReassignDoctor ? "Cita asignada" : "Cita reprogramada");
+        emailRequest.setMessage(shouldReassignDoctor ?
+                "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
+                "Su cita ha sido reprogramada. Por favor, revise su calendario.");
+
+        this.emailService.send(emailRequest);
+
+        CreateReminderDto createReminderDto = getCreateReminderDto(appointment, shouldReassignDoctor);
+
+        this.reminderService.save(createReminderDto);
 
         // Actualizar notas si se proporcionan
         if (updateAppointmentDto.getNotes() != null) {
@@ -131,6 +201,18 @@ public class AppointmentService {
         }
 
         return appointmentRepository.save(appointment);
+    }
+
+    private static CreateReminderDto getCreateReminderDto(Appointment appointment, boolean shouldReassignDoctor) {
+        CreateReminderDto createReminderDto = new CreateReminderDto();
+        createReminderDto.setTitle("Cita asignada");
+        createReminderDto.setAppointmentId(appointment.getId());
+        createReminderDto.setMessage(shouldReassignDoctor ?
+                "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
+                "Su cita ha sido reprogramada. Por favor, revise su calendario.");
+        createReminderDto.setReceiverId(appointment.getDoctor().getId());
+        createReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+        return createReminderDto;
     }
 
     private LocalDateTime calculateEndTime(Appointment appointment) {
@@ -277,20 +359,42 @@ public class AppointmentService {
         if (user.getSpecialty() != null) {
             User newDoctor = getAppointmentDoctor(appointment);
             appointment.setDoctor(newDoctor);
+
+            // TODO: Validar si se pudo re asignar el doctor, sino mantener el estado de cancelado
         }
 
         Map<String, Object> body = new HashMap<>();
 
         this.appointmentRepository.save(appointment);
 
+        boolean isPatient = user.getSpecialty() == null;
+
         body.put("appointment", appointment);
-        if (user.getSpecialty() != null) {
+        if (isPatient) {
             // TODO: Se envía notificación al paciente
             body.put("message", "La cita ha sido cancelada por el doctor, se le asignara un nuevo doctor");
         } else {
             // TODO: Se envía notificación al doctor y al paciente
             body.put("message", "La cita ha sido cancelada por el paciente");
         }
+
+        EmailRequest emailRequest = new EmailRequest();
+        emailRequest.setReceiver(user.getEmail());
+        emailRequest.setName(user.getFullName());
+        emailRequest.setSubject(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+        emailRequest.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
+        emailService.send(emailRequest);
+
+        CreateReminderDto createReminderDto = new CreateReminderDto();
+        createReminderDto.setTitle(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+        createReminderDto.setAppointmentId(appointment.getId());
+        createReminderDto.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
+        createReminderDto.setReceiverId(user.getId());
+        createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
+
+        this.reminderService.save(createReminderDto);
+        
+        
 
         return body;
     }

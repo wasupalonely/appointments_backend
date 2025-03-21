@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.mail.MessagingException;
 
+// ADMIN ONLY!!!
 @RestController
 @RequestMapping("/email")
 public class EmailController {
