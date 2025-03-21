@@ -86,8 +86,7 @@ public class AppointmentController {
         return ResponseEntity.ok(this.appointmentService.cancelAppointment(appointmentId, userId));
     }
 
-    @PatchMapping("/{appointmentId}/status/{status}")
-    public ResponseEntity<Appointment> changeStatus(@PathVariable Long appointmentId, @PathVariable AppointmentStatus status) {
-        return ResponseEntity.ok(this.appointmentService.changeStatus(appointmentId, status));
+    public ResponseEntity<Appointment> changeStatus(@PathVariable Long id, @PathVariable AppointmentStatus status) {
+        return ResponseEntity.ok(this.appointmentService.changeStatus(id, status));
     }
 }

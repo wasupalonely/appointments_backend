@@ -6,10 +6,7 @@ import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.exceptions.ScheduleConflictException;
-import com.juandmv.backend.models.dto.CreateAppointmentDto;
-import com.juandmv.backend.models.dto.CreateReminderDto;
-import com.juandmv.backend.models.dto.EmailRequest;
-import com.juandmv.backend.models.dto.UpdateAppointmentDto;
+import com.juandmv.backend.models.dto.*;
 import com.juandmv.backend.models.entities.*;
 import com.juandmv.backend.repositories.AppointmentRepository;
 import com.juandmv.backend.utils.Utils;
@@ -221,58 +218,6 @@ public class AppointmentService {
         return appointment.getStartTime().plusMinutes(duration + bufferMinutes);
     }
 
-//    @Transactional
-//    public Appointment update(Long id, @Valid UpdateAppointmentDto updateAppointmentDto) {
-//        Appointment appointment = this.findById(id);
-//
-//        if (updateAppointmentDto.getStartTime() != null && updateAppointmentDto.getAppointmentTypeId() != null) {
-//            // Se tiene que buscar otro doctor disponible
-//            // Setear la cita como reprogramada
-//            appointment.setStartTime(updateAppointmentDto.getStartTime());
-//            appointment.setEndTime(updateAppointmentDto
-//                    .getStartTime()
-//                    .plusMinutes(appointmentTypeService
-//                            .findById(appointment.getAppointmentType().getId())
-//                            .getDurationInMinutes() + 20));
-//            appointment.setStatus(AppointmentStatus.RE_SCHEDULED);
-//
-//            // Setear el nueva especialidad, por eso se tiene que cambiar el doctor
-//            appointment.setAppointmentType(appointmentTypeService.findById(updateAppointmentDto.getAppointmentTypeId()));
-//            User newDoctor = getAppointmentDoctor(appointment);
-//            appointment.setDoctor(newDoctor);
-//
-//        } else if (updateAppointmentDto.getStartTime() != null) {
-//            appointment.setStartTime(updateAppointmentDto.getStartTime());
-//            appointment.setEndTime(updateAppointmentDto
-//                    .getStartTime()
-//                    .plusMinutes(appointmentTypeService
-//                            .findById(appointment.getAppointmentType().getId())
-//                            .getDurationInMinutes() + 20));
-//            appointment.setStatus(AppointmentStatus.RE_SCHEDULED);
-//
-//            if (!isDoctorAvailable(appointment.getDoctor(),
-//                    updateAppointmentDto.getStartTime(),
-//                    updateAppointmentDto
-//                            .getStartTime()
-//                            .plusMinutes(appointmentTypeService
-//                                    .findById(appointment.getAppointmentType().getId())
-//                                    .getDurationInMinutes())))
-//            {
-//                User newDoctor = getAppointmentDoctor(appointment);
-//                appointment.setDoctor(newDoctor);
-//            }
-//        } else if (updateAppointmentDto.getAppointmentTypeId() != null) {
-//            User doctor = getAppointmentDoctor(appointment);
-//            appointment.setDoctor(doctor);
-//        }
-//
-//        appointment.setNotes(updateAppointmentDto.getNotes() != null ?
-//                updateAppointmentDto.getNotes() :
-//                appointment.getNotes());
-//
-//        return appointmentRepository.save(appointment);
-//    }
-
     public void delete(Long id) {
         // Se puede hacer un update a status cancelado
         this.findById(id);
@@ -356,26 +301,39 @@ public class AppointmentService {
                 ? AppointmentStatus.CANCELLED_BY_DOCTOR :
                 AppointmentStatus.CANCELLED_BY_PATIENT);
 
-        if (user.getSpecialty() != null) {
-            User newDoctor = getAppointmentDoctor(appointment);
-            appointment.setDoctor(newDoctor);
+        this.appointmentRepository.save(appointment);
 
-            // TODO: Validar si se pudo re asignar el doctor, sino mantener el estado de cancelado
+        if (user.getSpecialty() != null) {
+            // Se crea un unavailability temporal para que no se asigne el mismo doctor
+            CreateUnavailabilityDto createUnavailabilityDto = new CreateUnavailabilityDto();
+            createUnavailabilityDto.setDoctorId(user.getId());
+            createUnavailabilityDto.setStartTime(appointment.getStartTime());
+            createUnavailabilityDto.setEndTime(appointment.getEndTime());
+            createUnavailabilityDto.setReason("Cita cancelada por el doctor (Es un unavailability temporal)");
+            Unavailability tempUnavailability = unavailabilityService.save(createUnavailabilityDto);
+
+            // Se crea otra cita
+            CreateAppointmentDto createAppointmentDto = new CreateAppointmentDto();
+            createAppointmentDto.setPatientId(appointment.getPatient().getId());
+            createAppointmentDto.setStartTime(appointment.getStartTime());
+            createAppointmentDto.setNotes(appointment.getNotes());
+            createAppointmentDto.setAppointmentTypeId(appointment.getAppointmentType().getId());
+            // Se debería crear un parent appointment?
+            this.save(createAppointmentDto);
+
+            // Se borra el unavailability temporal
+            unavailabilityService.delete(tempUnavailability.getId());
         }
 
         Map<String, Object> body = new HashMap<>();
-
-        this.appointmentRepository.save(appointment);
 
         boolean isPatient = user.getSpecialty() == null;
 
         body.put("appointment", appointment);
         if (isPatient) {
-            // TODO: Se envía notificación al paciente
-            body.put("message", "La cita ha sido cancelada por el doctor, se le asignara un nuevo doctor");
-        } else {
-            // TODO: Se envía notificación al doctor y al paciente
             body.put("message", "La cita ha sido cancelada por el paciente");
+        } else {
+            body.put("message", "La cita ha sido cancelada por el doctor, se le asignara un nuevo doctor");
         }
 
         EmailRequest emailRequest = new EmailRequest();
@@ -391,11 +349,14 @@ public class AppointmentService {
         createReminderDto.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
         createReminderDto.setReceiverId(user.getId());
         createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
-
         this.reminderService.save(createReminderDto);
-        
-        
 
         return body;
+    }
+
+    public Appointment changeStatus(Long id, AppointmentStatus status) {
+        Appointment appointment = this.findById(id);
+        appointment.setStatus(status);
+        return this.appointmentRepository.save(appointment);
     }
 }
