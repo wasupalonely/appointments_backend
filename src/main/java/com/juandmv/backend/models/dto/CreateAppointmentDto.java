@@ -17,6 +17,8 @@ public class CreateAppointmentDto {
     @Positive(message = "El id del paciente debe ser positivo")
     private Long patientId;
 
+    private Long doctorId;
+
     @NotNull(message = "La fecha de inicio es obligatoria")
     @Future(message = "La fecha de inicio debe ser futura")
     private LocalDateTime startTime;

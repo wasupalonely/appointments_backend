@@ -90,13 +90,18 @@ public class AppointmentService {
         appointment.setAppointmentType(appointmentType);
         appointment.setStatus(AppointmentStatus.PENDING);
 
+        User doctor = null;
+
         // Asignar un doctor disponible
-        User doctor = getAppointmentDoctor(appointment);
+        if (createAppointmentDto.getDoctorId() == null) {
+            doctor = getAppointmentDoctor(appointment);
+        } else {
+            doctor = userService.findById(createAppointmentDto.getDoctorId());
+
+        }
+
         appointment.setDoctor(doctor);
-
         appointment.setPhysicalLocation(doctor.getPhysicalLocation());
-
-        
 
         // Manejar citas derivadas
         if (createAppointmentDto.getParentAppointmentId() != null) {
@@ -256,8 +261,22 @@ public class AppointmentService {
         // Validar disponibilidad por availability
         List<Availability> availabilities = availabilityService.findByDoctorId(doctor.getId());
         for (Availability availability : availabilities) {
-            if (startTime.isBefore(availability.getEndTime()) && endTime.isAfter(availability.getStartTime())) {
-                return false;
+            if (availability.isRecurring()) {
+                // Si es recurrente, verificar si el día de la semana coincide
+                if (startTime.getDayOfWeek() == availability.getDayOfWeek()) {
+                    // Verificar si el horario de la cita está dentro del horario de disponibilidad recurrente
+                    LocalDateTime availabilityStart = startTime.with(availability.getStartTime().toLocalTime());
+                    LocalDateTime availabilityEnd = startTime.with(availability.getEndTime().toLocalTime());
+
+                    if (startTime.isBefore(availabilityEnd) && endTime.isAfter(availabilityStart)) {
+                        return false; // El doctor no está disponible en este horario recurrente
+                    }
+                }
+            } else {
+                // Si no es recurrente, verificar si la fecha y hora coinciden exactamente
+                if (startTime.isBefore(availability.getEndTime()) && endTime.isAfter(availability.getStartTime())) {
+                    return false; // El doctor no está disponible en este horario no recurrente
+                }
             }
         }
 
@@ -265,7 +284,7 @@ public class AppointmentService {
         List<Unavailability> unavailabilities = unavailabilityService.findByDoctorId(doctor.getId());
         for (Unavailability unavailability : unavailabilities) {
             if (startTime.isBefore(unavailability.getEndTime()) && endTime.isAfter(unavailability.getStartTime())) {
-                return false;
+                return false; // El doctor tiene una indisponibilidad en este horario
             }
         }
 
@@ -277,11 +296,11 @@ public class AppointmentService {
                         AppointmentStatus.COMPLETED));
         for (Appointment appointment : appointments) {
             if (startTime.isBefore(appointment.getEndTime()) && endTime.isAfter(appointment.getStartTime())) {
-                return false;
+                return false; // El doctor ya tiene una cita en este horario
             }
         }
 
-        return true;
+        return true; // El doctor está disponible
     }
 
     private void validateActiveAppointmentsByUser(User user) {
@@ -358,5 +377,97 @@ public class AppointmentService {
         Appointment appointment = this.findById(id);
         appointment.setStatus(status);
         return this.appointmentRepository.save(appointment);
+    }
+
+    public List<Map<String, Object>> findAvailableAppointments(Long appointmentTypeId, LocalDateTime startRange, LocalDateTime endRange) {
+        // Obtener la duración de la cita basada en el tipo de cita
+        AppointmentType appointmentType = appointmentTypeService.findById(appointmentTypeId);
+        int appointmentDuration = appointmentType.getDurationInMinutes();
+
+        // Obtener todos los doctores de la especialidad asociada al tipo de cita
+        List<User> doctors = userService.findBySpecialtyId(appointmentType.getSpecialty().getId());
+
+        // Lista para almacenar las citas disponibles con información completa
+        List<Map<String, Object>> availableAppointments = new ArrayList<>();
+
+        // Iterar sobre cada doctor
+        for (User doctor : doctors) {
+            // Obtener las disponibilidades del doctor
+            List<Availability> availabilities = availabilityService.findByDoctorId(doctor.getId());
+
+            // Obtener las citas ya agendadas del doctor
+            List<Appointment> appointments = appointmentRepository.findByDoctorIdAndStatusNotIn(
+                    doctor.getId(),
+                    Arrays.asList(AppointmentStatus.CANCELLED_BY_DOCTOR, AppointmentStatus.CANCELLED_BY_PATIENT, AppointmentStatus.COMPLETED)
+            );
+
+            // Generar slots de tiempo disponibles para el doctor
+            for (Availability availability : availabilities) {
+                LocalDateTime slotStartTime = availability.getStartTime();
+                LocalDateTime slotEndTime = availability.getEndTime();
+
+                // Si la disponibilidad es recurrente, generar slots para cada semana en el rango de fechas
+                if (availability.isRecurring()) {
+                    LocalDateTime currentSlotStart = slotStartTime;
+                    while (currentSlotStart.isBefore(endRange)) {
+                        // Verificar si el slot está dentro del rango de fechas solicitado
+                        if (currentSlotStart.isAfter(startRange) || currentSlotStart.isEqual(startRange)) {
+                            // Verificar si el slot está disponible (no coincide con una cita agendada)
+                            if (isSlotAvailable(currentSlotStart, currentSlotStart.plusMinutes(appointmentDuration), appointments)) {
+                                // Crear un objeto con la información completa
+                                Map<String, Object> appointmentInfo = new HashMap<>();
+                                appointmentInfo.put("doctorId", doctor.getId());
+                                appointmentInfo.put("doctorName", doctor.getFullName());
+                                appointmentInfo.put("specialty", appointmentType.getSpecialty().getName()); // Obtener la especialidad del tipo de cita
+                                appointmentInfo.put("appointmentTypeId", appointmentType.getId()); // ID del tipo de cita
+                                appointmentInfo.put("appointmentType", appointmentType.getName());
+                                appointmentInfo.put("availableDateTime", currentSlotStart);
+
+                                // Agregar a la lista de citas disponibles
+                                availableAppointments.add(appointmentInfo);
+                            }
+                        }
+                        // Mover al siguiente slot recurrente (1 semana después)
+                        currentSlotStart = currentSlotStart.plusWeeks(1);
+                    }
+                } else {
+                    // Si no es recurrente, verificar si el slot está dentro del rango de fechas
+                    if (slotStartTime.isAfter(startRange) || slotStartTime.isEqual(startRange)) {
+                        if (slotStartTime.isBefore(endRange) && isSlotAvailable(slotStartTime, slotEndTime, appointments)) {
+                            // Crear un objeto con la información completa
+                            Map<String, Object> appointmentInfo = new HashMap<>();
+                            appointmentInfo.put("doctorId", doctor.getId());
+                            appointmentInfo.put("doctorName", doctor.getFullName());
+                            appointmentInfo.put("specialty", appointmentType.getSpecialty().getName()); // Obtener la especialidad del tipo de cita
+                            appointmentInfo.put("appointmentTypeId", appointmentType.getId()); // ID del tipo de cita
+                            appointmentInfo.put("appointmentType", appointmentType.getName());
+                            appointmentInfo.put("availableDateTime", slotStartTime);
+
+                            // Agregar a la lista de citas disponibles
+                            availableAppointments.add(appointmentInfo);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Ordenar las citas disponibles por fecha y hora
+        availableAppointments.sort((a1, a2) -> {
+            LocalDateTime dateTime1 = (LocalDateTime) a1.get("availableDateTime");
+            LocalDateTime dateTime2 = (LocalDateTime) a2.get("availableDateTime");
+            return dateTime1.compareTo(dateTime2);
+        });
+
+        return availableAppointments;
+    }
+
+    private boolean isSlotAvailable(LocalDateTime slotStartTime, LocalDateTime slotEndTime, List<Appointment> appointments) {
+        // Verificar si el slot coincide con una cita ya agendada
+        for (Appointment appointment : appointments) {
+            if (slotStartTime.isBefore(appointment.getEndTime()) && slotEndTime.isAfter(appointment.getStartTime())) {
+                return false; // El slot no está disponible
+            }
+        }
+        return true; // El slot está disponible
     }
 }
