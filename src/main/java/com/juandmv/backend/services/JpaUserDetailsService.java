@@ -1,5 +1,6 @@
 package com.juandmv.backend.services;
 
+import com.juandmv.backend.models.dto.CustomUserDetails;
 import com.juandmv.backend.models.entities.User;
 import com.juandmv.backend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -22,7 +23,6 @@ public class JpaUserDetailsService implements UserDetailsService {
 
     @Transactional()
     @Override
-    //! Username must be the email because it is unique
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> optionalUser = this.userRepository.findByEmail(username);
         if (optionalUser.isEmpty()) {
@@ -36,11 +36,6 @@ public class JpaUserDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-                true,
-                true,
-                true,
-                true,
-                authorities);
+        return new CustomUserDetails(user, authorities); // Usamos nuestra clase personalizada
     }
 }

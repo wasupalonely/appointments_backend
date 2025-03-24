@@ -33,6 +33,8 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    private boolean enabled = true;
     private Date createdAt = new Date();
     private Date updatedAt = new Date();
     // TODO: Implementar roles de usuario (estudiante, ciudadano)

@@ -113,44 +113,46 @@ public class AppointmentService {
 
         Appointment appointmentSaved = appointmentRepository.save(appointment);
 
-        // Enviar notificaciones al usuario y al doctor
-        EmailRequest patientEmailRequest = new EmailRequest();
-        patientEmailRequest.setReceiver(patient.getEmail());
-        patientEmailRequest.setName(patient.getFullName());
-        patientEmailRequest.setSubject("Cita agendada");
-        patientEmailRequest.setMessage("Se ha agendado una cita con el profesional " +
-                doctor.getFullName() + " para el dia " +
-                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
-        emailService.send(patientEmailRequest);
+        // Este bloque de código de notificaciones está generando mucha demora, ¿cómo se puede optimizar?
 
-        CreateReminderDto createPatientReminderDto = new CreateReminderDto();
-        createPatientReminderDto.setTitle("Cita agendada");
-        createPatientReminderDto.setAppointmentId(appointmentSaved.getId());
-        createPatientReminderDto.setMessage("Se ha agendado una cita con el profesional " +
-                doctor.getFullName() + " para el dia " + createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
-        createPatientReminderDto.setReceiverId(patient.getId());
-        createPatientReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
-
-        this.reminderService.save(createPatientReminderDto);
-
-        EmailRequest doctorEmailRequest = new EmailRequest();
-        doctorEmailRequest.setReceiver(doctor.getEmail());
-        doctorEmailRequest.setName(doctor.getFullName());
-        doctorEmailRequest.setSubject("Cita agendada");
-        doctorEmailRequest.setMessage("Se ha agendado una cita con el paciente para el día " +
-                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
-        emailService.send(doctorEmailRequest);
-
-        // TODO: Revisar si este método se puede realizar en el método de enviar el email directamente
-        CreateReminderDto createDoctorReminderDto = new CreateReminderDto();
-        createDoctorReminderDto.setTitle("Cita asignada");
-        createDoctorReminderDto.setAppointmentId(appointmentSaved.getId());
-        createDoctorReminderDto.setMessage("Se ha agendado una cita con el paciente para el día " +
-                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
-        createDoctorReminderDto.setReceiverId(appointmentSaved.getDoctor().getId());
-        createDoctorReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
-
-        this.reminderService.save(createDoctorReminderDto);
+//        // Enviar notificaciones al usuario y al doctor
+//        EmailRequest patientEmailRequest = new EmailRequest();
+//        patientEmailRequest.setReceiver(patient.getEmail());
+//        patientEmailRequest.setName(patient.getFullName());
+//        patientEmailRequest.setSubject("Cita agendada");
+//        patientEmailRequest.setMessage("Se ha agendado una cita con el profesional " +
+//                doctor.getFullName() + " para el dia " +
+//                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+//        emailService.send(patientEmailRequest);
+//
+//        CreateReminderDto createPatientReminderDto = new CreateReminderDto();
+//        createPatientReminderDto.setTitle("Cita agendada");
+//        createPatientReminderDto.setAppointmentId(appointmentSaved.getId());
+//        createPatientReminderDto.setMessage("Se ha agendado una cita con el profesional " +
+//                doctor.getFullName() + " para el dia " + createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+//        createPatientReminderDto.setReceiverId(patient.getId());
+//        createPatientReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+//
+//        this.reminderService.save(createPatientReminderDto);
+//
+//        EmailRequest doctorEmailRequest = new EmailRequest();
+//        doctorEmailRequest.setReceiver(doctor.getEmail());
+//        doctorEmailRequest.setName(doctor.getFullName());
+//        doctorEmailRequest.setSubject("Cita agendada");
+//        doctorEmailRequest.setMessage("Se ha agendado una cita con el paciente para el día " +
+//                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+//        emailService.send(doctorEmailRequest);
+//
+//        // TODO: Revisar si este método se puede realizar en el método de enviar el email directamente
+//        CreateReminderDto createDoctorReminderDto = new CreateReminderDto();
+//        createDoctorReminderDto.setTitle("Cita asignada");
+//        createDoctorReminderDto.setAppointmentId(appointmentSaved.getId());
+//        createDoctorReminderDto.setMessage("Se ha agendado una cita con el paciente para el día " +
+//                createAppointmentDto.getStartTime().toLocalDate().format(Utils.formatter));
+//        createDoctorReminderDto.setReceiverId(appointmentSaved.getDoctor().getId());
+//        createDoctorReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+//
+//        this.reminderService.save(createDoctorReminderDto);
         
         return appointmentSaved;
     }
@@ -231,6 +233,7 @@ public class AppointmentService {
 
     private User getAppointmentDoctor(Appointment appointment) {
         Long specialtyId = appointment.getAppointmentType().getSpecialty().getId();
+        System.out.println("Specialty ID: " + specialtyId);
         List<User> doctors = userService.findBySpecialtyId(specialtyId);
 
         if (doctors.isEmpty()) {

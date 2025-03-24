@@ -2,6 +2,7 @@ package com.juandmv.backend.auth.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juandmv.backend.auth.TokenJwtConfig;
+import com.juandmv.backend.models.dto.CustomUserDetails;
 import com.juandmv.backend.models.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -53,14 +54,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
-        org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) authResult.getPrincipal();
+        CustomUserDetails user = (CustomUserDetails) authResult.getPrincipal();
         String email = user.getUsername();
+        Long userId = user.getId();
 
         Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
 
         Claims claims = Jwts
                 .claims()
                 .add("roles", new ObjectMapper().writeValueAsString(roles))
+                .add("userId", userId.toString())
                 .build();
 
         String jwt = Jwts.builder()
@@ -76,6 +79,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Map<String, String> body = new HashMap<>();
         body.put("token", jwt);
         body.put("email", email);
+        body.put("id", userId.toString());
         body.put("role", new ObjectMapper().writeValueAsString(roles));
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));
