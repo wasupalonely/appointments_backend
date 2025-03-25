@@ -64,4 +64,8 @@ public class User {
     public String getFullName() {
         return this.firstName + " " + this.lastName;
     }
+
+    public String getPhysicalLocationAddress() {
+        return this.physicalLocation.getAddress() + ", " + this.physicalLocation.getName();
+    }
 }

@@ -140,25 +140,13 @@ public class AppointmentService {
                     appointment.getEndTime());
         }
 
-        EmailRequest emailRequest = new EmailRequest();
-
         // Reasignar doctor si es necesario
         if (shouldReassignDoctor) {
             appointment.setDoctor(getAppointmentDoctor(appointment));
         }
 
-        emailRequest.setReceiver(appointment.getDoctor().getEmail());
-        emailRequest.setName(appointment.getPatient().getFullName());
-        emailRequest.setSubject(shouldReassignDoctor ? "Cita asignada" : "Cita reprogramada");
-        emailRequest.setMessage(shouldReassignDoctor ?
-                "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
-                "Su cita ha sido reprogramada. Por favor, revise su calendario.");
-
-        this.emailService.send(emailRequest);
-
-        CreateReminderDto createReminderDto = getCreateReminderDto(appointment, shouldReassignDoctor);
-
-        this.reminderService.save(createReminderDto);
+        // Envío asíncrono de notificaciones
+        this.emailService.sendUpdateNotificationsAsync(appointment, shouldReassignDoctor);
 
         // Actualizar notas si se proporcionan
         if (updateAppointmentDto.getNotes() != null) {
@@ -319,20 +307,22 @@ public class AppointmentService {
             body.put("message", "La cita ha sido cancelada por el doctor, se le asignara un nuevo doctor");
         }
 
-        EmailRequest emailRequest = new EmailRequest();
-        emailRequest.setReceiver(user.getEmail());
-        emailRequest.setName(user.getFullName());
-        emailRequest.setSubject(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
-        emailRequest.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
-        emailService.send(emailRequest);
+        this.emailService.sendCancellationEmailAndReminderAsync(appointment, user, isPatient);
 
-        CreateReminderDto createReminderDto = new CreateReminderDto();
-        createReminderDto.setTitle(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
-        createReminderDto.setAppointmentId(appointment.getId());
-        createReminderDto.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
-        createReminderDto.setReceiverId(user.getId());
-        createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
-        this.reminderService.save(createReminderDto);
+//        EmailRequest emailRequest = new EmailRequest();
+//        emailRequest.setReceiver(user.getEmail());
+//        emailRequest.setName(user.getFullName());
+//        emailRequest.setSubject(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+//        emailRequest.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
+//        emailService.send(emailRequest);
+//
+//        CreateReminderDto createReminderDto = new CreateReminderDto();
+//        createReminderDto.setTitle(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+//        createReminderDto.setAppointmentId(appointment.getId());
+//        createReminderDto.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
+//        createReminderDto.setReceiverId(user.getId());
+//        createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
+//        this.reminderService.save(createReminderDto);
 
         return body;
     }

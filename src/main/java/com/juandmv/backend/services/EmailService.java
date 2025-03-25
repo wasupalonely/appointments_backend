@@ -12,13 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -73,7 +70,7 @@ public class EmailService {
         request.setSubject("Cita agendada");
         request.setMessage("Se ha agendado una cita con el profesional " +
                 doctor.getFullName() + " para el dia " +
-                startTime.toLocalDate().format(Utils.formatter));
+                startTime.toLocalDate().format(Utils.formatter) + ". La dirección es " + doctor.getPhysicalLocationAddress());
         return request;
     }
 
@@ -95,7 +92,7 @@ public class EmailService {
         request.setName(doctor.getFullName());
         request.setSubject("Cita agendada");
         request.setMessage("Se ha agendado una cita con un paciente para el día " +
-                startTime.toLocalDate().format(Utils.formatter));
+                startTime.toLocalDate().format(Utils.formatter) + ". Por favor, revise su bandeja de notificaciones para conocer más detalles.");
         return request;
     }
 
@@ -111,6 +108,75 @@ public class EmailService {
     }
 
     // ---------------------------------------------------------------------------------------------------
+    // AL CANCELAR LA CITA SE EJECUTA EL SIGUIENTE BLOQUE
+
+    @Async
+    public void sendCancellationEmailAndReminderAsync(Appointment appointment, User user, boolean isPatient) {
+        try {
+            // Preparar el EmailRequest
+            EmailRequest emailRequest = new EmailRequest();
+            emailRequest.setReceiver(user.getEmail());
+            emailRequest.setName(user.getFullName());
+            emailRequest.setSubject(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+            emailRequest.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
+
+            // Enviar correo asíncrono
+            this.send(emailRequest);
+
+            // Crear y guardar recordatorio
+            CreateReminderDto createReminderDto = new CreateReminderDto();
+            createReminderDto.setTitle(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+            createReminderDto.setAppointmentId(appointment.getId());
+            createReminderDto.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
+            createReminderDto.setReceiverId(user.getId());
+            createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
+
+            reminderService.save(createReminderDto);
+
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de cancelación: {}", e.getMessage());
+        }
+    }
+
+    //----------------------------------------------------------------------------------------------------
+
+    // AL ACTUALIZAR LA CITA SE EJECUTA EL SIGUIENTE BLOQUE
+
+    @Async
+    public void sendUpdateNotificationsAsync(Appointment appointment, boolean shouldReassignDoctor) {
+        try {
+            // Preparar el EmailRequest
+            EmailRequest emailRequest = new EmailRequest();
+            emailRequest.setReceiver(appointment.getDoctor().getEmail());
+            emailRequest.setName(appointment.getPatient().getFullName());
+            emailRequest.setSubject(shouldReassignDoctor ? "Cita asignada" : "Cita reprogramada");
+            emailRequest.setMessage(shouldReassignDoctor ?
+                    "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
+                    "Su cita ha sido reprogramada. Por favor, revise su calendario.");
+
+            // Enviar correo asíncrono
+            this.send(emailRequest);
+
+            // Crear y guardar recordatorio
+            CreateReminderDto createReminderDto = new CreateReminderDto();
+            createReminderDto.setTitle(shouldReassignDoctor ? "Cita asignada" : "Cita reprogramada");
+            createReminderDto.setAppointmentId(appointment.getId());
+            createReminderDto.setMessage(shouldReassignDoctor ?
+                    "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
+                    "Su cita ha sido reprogramada. Por favor, revise su calendario.");
+            createReminderDto.setReceiverId(appointment.getDoctor().getId());
+            createReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+
+            reminderService.save(createReminderDto);
+
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de actualización de cita: {}", e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------
+
+    // MÉTODOS BÁSICOS PARA EL ENVIO DE CORREOS
 
     /**
      * Sends an email with well-formatted HTML content
@@ -161,16 +227,7 @@ public class EmailService {
         }
     }
 
-    @Bean
-    public TaskExecutor emailTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(25);
-        executor.setThreadNamePrefix("EmailThread-");
-        executor.initialize();
-        return executor;
-    }
+    // --------------------------------------------------------------------------------------------------------------
 
     /**
      * Generates an attractive HTML template for the email
