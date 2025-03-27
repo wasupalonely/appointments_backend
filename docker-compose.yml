@@ -24,11 +24,11 @@ services:
       - db
 
   app: # <-- Nuevo servicio para tu aplicación Spring Boot
-    build: .  # Usa el Dockerfile del directorio actual
+    build: .
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appointments_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/appointments_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     depends_on:
