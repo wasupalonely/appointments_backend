@@ -66,6 +66,7 @@ public class User {
     }
 
     public String getPhysicalLocationAddress() {
+        if (this.physicalLocation == null) return "";
         return this.physicalLocation.getAddress() + ", " + this.physicalLocation.getName();
     }
 }

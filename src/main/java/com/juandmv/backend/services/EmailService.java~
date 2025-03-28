@@ -1,0 +1,340 @@
+package com.juandmv.backend.services;
+
+import com.juandmv.backend.enums.ReminderType;
+import com.juandmv.backend.models.dto.CreateReminderDto;
+import com.juandmv.backend.models.dto.EmailRequest;
+import com.juandmv.backend.models.entities.Appointment;
+import com.juandmv.backend.models.entities.User;
+import com.juandmv.backend.utils.Utils;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
+
+@Service
+public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+
+    @Autowired
+    private ReminderService reminderService;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String sender;
+
+    @Autowired
+    private AsyncConfigurer asyncConfigurer;
+
+    // AL MOMENTO DE CREAR SE EJECUTA EL SIGUIENTE BLOQUE
+
+    @Value("${spring.mail.username}")
+    private String sender;
+
+    @Async
+    public void sendAppointmentNotifications(Appointment appointmentSaved) {
+        User patient = appointmentSaved.getPatient();
+        User doctor = appointmentSaved.getDoctor();
+        LocalDateTime startTime = appointmentSaved.getStartTime();
+
+        // Send patient email and create patient reminder
+        sendUserNotification(
+                patient,
+                doctor,
+                startTime,
+                true,
+                appointmentSaved
+        );
+
+        // Send doctor email and create doctor reminder
+        sendUserNotification(
+                doctor,
+                patient,
+                startTime,
+                false,
+                appointmentSaved
+        );
+    }
+
+    private void sendUserNotification(
+            User recipient,
+            User otherParty,
+            LocalDateTime startTime,
+            boolean isPatient,
+            Appointment appointment
+    ) {
+        // Create and send email
+        EmailRequest emailRequest = createEmailRequest(
+                recipient,
+                otherParty,
+                startTime,
+                isPatient
+        );
+        this.send(emailRequest);
+
+        // Create reminder
+        CreateReminderDto reminderDto = createReminderDto(
+                appointment,
+                recipient,
+                isPatient
+        );
+        this.reminderService.save(reminderDto);
+    }
+
+    private EmailRequest createEmailRequest(
+            User recipient,
+            User otherParty,
+            LocalDateTime startTime,
+            boolean isPatient
+    ) {
+        EmailRequest request = new EmailRequest();
+        request.setReceiver(recipient.getEmail());
+        request.setName(recipient.getFullName());
+
+        if (isPatient) {
+            request.setSubject("Cita agendada");
+            request.setMessage("Se ha agendado una cita con el profesional " +
+                    otherParty.getFullName() + " para el dia " +
+                    startTime.toLocalDate().format(Utils.formatter) +
+                    ". La dirección es " + otherParty.getPhysicalLocationAddress());
+        } else {
+            request.setSubject("Cita agendada");
+            request.setMessage("Se ha agendado una cita con un paciente para el día " +
+                    startTime.toLocalDate().format(Utils.formatter) +
+                    ". Por favor, revise su bandeja de notificaciones para conocer más detalles.");
+        }
+
+        return request;
+    }
+
+    private CreateReminderDto createReminderDto(
+            Appointment appointment,
+            User recipient,
+            boolean isPatient
+    ) {
+        CreateReminderDto reminderDto = new CreateReminderDto();
+        reminderDto.setAppointmentId(appointment.getId());
+        reminderDto.setReceiverId(recipient.getId());
+        reminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+
+        if (isPatient) {
+            reminderDto.setTitle("Cita agendada");
+            reminderDto.setMessage("Se ha agendado una cita con el profesional " +
+                    appointment.getDoctor().getFullName() + " para el dia " +
+                    appointment.getStartTime().toLocalDate().format(Utils.formatter));
+        } else {
+            reminderDto.setTitle("Cita asignada");
+            reminderDto.setMessage("Se ha agendado una cita con un paciente para el día " +
+                    appointment.getStartTime().toLocalDate().format(Utils.formatter));
+        }
+
+        return reminderDto;
+    }
+
+    @Async
+    public void sendCancellationEmailAndReminderAsync(
+            Appointment appointment,
+            User user,
+            boolean isPatient
+    ) {
+        try {
+            // Prepare EmailRequest
+            EmailRequest emailRequest = createCancellationEmailRequest(user, isPatient);
+            this.send(emailRequest);
+
+            // Create and save reminder
+            CreateReminderDto createReminderDto = createCancellationReminderDto(
+                    appointment,
+                    user,
+                    isPatient
+            );
+            reminderService.save(createReminderDto);
+
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de cancelación: {}", e.getMessage());
+        }
+    }
+
+    private EmailRequest createCancellationEmailRequest(User user, boolean isPatient) {
+        EmailRequest emailRequest = new EmailRequest();
+        emailRequest.setReceiver(user.getEmail());
+        emailRequest.setName(user.getFullName());
+        emailRequest.setSubject(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+        emailRequest.setMessage(isPatient ?
+                "Su cita ha sido cancelada" :
+                "Se le asignará una nueva cita con un nuevo doctor en breves"
+        );
+        return emailRequest;
+    }
+
+    private CreateReminderDto createCancellationReminderDto(
+            Appointment appointment,
+            User user,
+            boolean isPatient
+    ) {
+        CreateReminderDto createReminderDto = new CreateReminderDto();
+        createReminderDto.setTitle(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
+        createReminderDto.setAppointmentId(appointment.getId());
+        createReminderDto.setMessage(isPatient ?
+                "Su cita ha sido cancelada" :
+                "Se le asignará una nueva cita con un nuevo doctor en breves"
+        );
+        createReminderDto.setReceiverId(user.getId());
+        createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
+        return createReminderDto;
+    }
+
+    @Async
+    public void sendUpdateNotificationsAsync(
+            Appointment appointment,
+            boolean shouldReassignDoctor
+    ) {
+        try {
+            // Prepare EmailRequest
+            EmailRequest emailRequest = createUpdateEmailRequest(
+                    appointment,
+                    shouldReassignDoctor
+            );
+            this.send(emailRequest);
+
+            // Create and save reminder
+            CreateReminderDto createReminderDto = createUpdateReminderDto(
+                    appointment,
+                    shouldReassignDoctor
+            );
+            reminderService.save(createReminderDto);
+
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de actualización de cita: {}", e.getMessage());
+        }
+    }
+
+    private EmailRequest createUpdateEmailRequest(
+            Appointment appointment,
+            boolean shouldReassignDoctor
+    ) {
+        EmailRequest emailRequest = new EmailRequest();
+        emailRequest.setReceiver(appointment.getDoctor().getEmail());
+        emailRequest.setName(appointment.getPatient().getFullName());
+        emailRequest.setSubject(shouldReassignDoctor ? "Cita asignada" : "Cita reprogramada");
+        emailRequest.setMessage(shouldReassignDoctor ?
+                "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
+                "Su cita ha sido reprogramada. Por favor, revise su calendario."
+        );
+        return emailRequest;
+    }
+
+    private CreateReminderDto createUpdateReminderDto(
+            Appointment appointment,
+            boolean shouldReassignDoctor
+    ) {
+        CreateReminderDto createReminderDto = new CreateReminderDto();
+        createReminderDto.setTitle(shouldReassignDoctor ? "Cita asignada" : "Cita reprogramada");
+        createReminderDto.setAppointmentId(appointment.getId());
+        createReminderDto.setMessage(shouldReassignDoctor ?
+                "Se le ha asignado una nueva cita. Por favor, revise su calendario." :
+                "Su cita ha sido reprogramada. Por favor, revise su calendario."
+        );
+        createReminderDto.setReceiverId(appointment.getDoctor().getId());
+        createReminderDto.setReminderType(ReminderType.APPOINTMENT_REMINDER);
+        return createReminderDto;
+    }
+
+    // Existing methods for sending emails remain the same
+    public void sendEmail(String recipient, String subject, String name, String message) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+        helper.setFrom(sender);
+        helper.setTo(recipient);
+        helper.setSubject(subject);
+
+        String htmlContent = generateHtmlTemplate(name, message);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(mimeMessage);
+    }
+
+    @Async
+    public CompletableFuture<Void> sendEmailAsync(EmailRequest emailRequest) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                sendEmail(
+                        emailRequest.getReceiver(),
+                        emailRequest.getSubject(),
+                        emailRequest.getName(),
+                        emailRequest.getMessage()
+                );
+                logger.info("Email sent successfully to: {}", emailRequest.getReceiver());
+            } catch (MessagingException e) {
+                logger.error("Failed to send email to {}: {}", emailRequest.getReceiver(), e.getMessage());
+                // Optionally implement retry mechanism here
+            }
+        });
+    }
+
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Generates an attractive HTML template for the email
+     */
+    private String generateHtmlTemplate(String name, String message) {
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <style>\n" +
+                "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; }\n" +
+                "        .container { border: 1px solid #ddd; border-radius: 5px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }\n" +
+                "        .header { background-color: #4a86e8; color: white; padding: 20px; text-align: center; }\n" +
+                "        .content { background-color: #ffffff; padding: 20px 30px; }\n" +
+                "        .message { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4a86e8; margin: 20px 0; }\n" +
+                "        .footer { background-color: #f1f1f1; font-size: 12px; text-align: center; padding: 15px; color: #666; }\n" +
+                "        h1 { margin: 0; font-size: 24px; }\n" +
+                "        p { margin-bottom: 15px; }\n" +
+                "        .button { display: inline-block; background-color: #4a86e8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"header\">\n" +
+                "            <h1>Notification</h1>\n" +
+                "        </div>\n" +
+                "        <div class=\"content\">\n" +
+                "            <p>Hola, <strong>" + name + "</strong>,</p>\n" +
+                "            <div class=\"message\">\n" +
+                "                <p>" + message + "</p>\n" +
+                "            </div>\n" +
+                "            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>\n" +
+                "            <p>Best regards,<br>The " + getCompanyName() + " Team</p>\n" +
+                "        </div>\n" +
+                "        <div class=\"footer\">\n" +
+                "            <p>This is an automated message. Please do not reply to this email.</p>\n" +
+                "            <p>&copy; " + java.time.Year.now().getValue() + " " + getCompanyName() + ". All rights reserved.</p>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+    }
+
+    /**
+     * Returns the company name to use in the template
+     */
+    private String getCompanyName() {
+        return "MediTec";
+    }
+}

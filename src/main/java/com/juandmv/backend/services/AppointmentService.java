@@ -309,21 +309,6 @@ public class AppointmentService {
 
         this.emailService.sendCancellationEmailAndReminderAsync(appointment, user, isPatient);
 
-//        EmailRequest emailRequest = new EmailRequest();
-//        emailRequest.setReceiver(user.getEmail());
-//        emailRequest.setName(user.getFullName());
-//        emailRequest.setSubject(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
-//        emailRequest.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
-//        emailService.send(emailRequest);
-//
-//        CreateReminderDto createReminderDto = new CreateReminderDto();
-//        createReminderDto.setTitle(isPatient ? "Cita cancelada" : "Cita cancelada por el doctor");
-//        createReminderDto.setAppointmentId(appointment.getId());
-//        createReminderDto.setMessage(isPatient ? "Su cita ha sido cancelada" : "Se le asignará una nueva cita con un nuevo doctor en breves");
-//        createReminderDto.setReceiverId(user.getId());
-//        createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
-//        this.reminderService.save(createReminderDto);
-
         return body;
     }
 
