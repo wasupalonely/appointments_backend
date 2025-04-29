@@ -2,6 +2,7 @@ package com.juandmv.backend.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.juandmv.backend.enums.DocumentType;
+import com.juandmv.backend.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,10 +19,6 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private String username;
-
 
     private String firstName;
 
@@ -41,6 +38,10 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String documentNumber;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     private boolean enabled = true;
     private Date createdAt = new Date();

@@ -94,7 +94,6 @@ public class UserService {
         createUserDto.setRoles(roles);
 
         User newUser = new User();
-        newUser.setUsername(createUserDto.getUsername());
         newUser.setFirstName(createUserDto.getFirstName());
         newUser.setLastName(createUserDto.getLastName());
         newUser.setPhone(createUserDto.getPhone());
@@ -103,6 +102,7 @@ public class UserService {
         newUser.setDocumentType(createUserDto.getDocumentType());
         newUser.setDocumentNumber(createUserDto.getDocumentNumber());
         newUser.setRoles(createUserDto.getRoles());
+        newUser.setGender(createUserDto.getGender());
 
         if (createUserDto.getRole() == Roles.DOCTOR) {
             if (createUserDto.getSpecialtyId() == null) {

@@ -1,6 +1,7 @@
 package com.juandmv.backend.models.dto;
 
 import com.juandmv.backend.enums.DocumentType;
+import com.juandmv.backend.enums.Gender;
 import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.models.entities.Role;
 import jakarta.persistence.EnumType;
@@ -14,9 +15,6 @@ import java.util.List;
 @Getter
 @Setter
 public class CreateUserDto {
-
-    @NotBlank(message = "El nombre de usuario es obligatorio")
-    private String username;
 
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
@@ -44,6 +42,9 @@ public class CreateUserDto {
     @NotNull(message = "El documento es obligatorio")
     @NotBlank(message = "El documento no puede estar vacío")
     private String documentNumber;
+
+    @NotNull(message = "El género es obligatorio")
+    private Gender gender;
 
     private List<Role> roles;
 
