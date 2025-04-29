@@ -68,6 +68,15 @@ public class UserService {
 
     @Transactional
     public User save(CreateUserDto createUserDto) {
+        // Validar si el documento y el tipo de documento son válidos
+        Optional<User> optionalDocument = userRepository.
+                findByDocumentTypeAndDocumentNumber
+                        (createUserDto.getDocumentType(), createUserDto.getDocumentNumber());
+
+        if (optionalDocument.isPresent()) {
+            throw new BadRequestException("El documento ya está registrado");
+        }
+
         // Validar si el email ya existe
         Optional<User> optionalUser = this.findByEmail(createUserDto.getEmail());
         if (optionalUser.isPresent()) {
@@ -91,6 +100,8 @@ public class UserService {
         newUser.setPhone(createUserDto.getPhone());
         newUser.setEmail(createUserDto.getEmail());
         newUser.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
+        newUser.setDocumentType(createUserDto.getDocumentType());
+        newUser.setDocumentNumber(createUserDto.getDocumentNumber());
         newUser.setRoles(createUserDto.getRoles());
 
         if (createUserDto.getRole() == Roles.DOCTOR) {

@@ -1,6 +1,7 @@
 package com.juandmv.backend.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.juandmv.backend.enums.DocumentType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,13 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DocumentType documentType;
+
+    @Column(unique = true, nullable = false)
+    private String documentNumber;
 
     private boolean enabled = true;
     private Date createdAt = new Date();
