@@ -47,7 +47,7 @@ public class JpaUserDetailsService implements UserDetailsService {
         // Devolvemos un CustomUserDetails con la información necesaria
         return new CustomUserDetails(
                 user.getId(),
-                user.getUsername(), // documentType:documentNumber como username
+                user.getFullName(), // documentType:documentNumber como username
                 user.getPassword(), // Usando documentNumber como password
                 user.getEmail(),
                 documentType,
