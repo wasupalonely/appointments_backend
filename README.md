@@ -56,4 +56,4 @@ localhost:8080/api-docs
 - Asegúrate de tener todas las dependencias instaladas antes de ejecutar el proyecto
 - Verifica que los puertos necesarios estén disponibles
 - Para cualquier problema de ejecución, revisa los logs del contenedor Docker o de la aplicación Spring Boot
-
+- Revisar que no hayan conflictos con los puertos de procesos locales (Por ejemplo: que el puerto de la base de datos no sea usado por otro proyecto, porque de esa manera no se podrá ejecutar la aplicación)
