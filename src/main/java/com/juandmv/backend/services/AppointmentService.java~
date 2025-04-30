@@ -74,6 +74,9 @@ public class AppointmentService {
         User patient = userService.findById(createAppointmentDto.getPatientId());
         User doctor = userService.findById(createAppointmentDto.getDoctorId());
 
+        int procedureDuration = appointmentType.getDurationInMinutes(); // Duración del procedimiento en minutos
+        int bufferMinutes = 20; // Tiempo adicional de descanso o margen
+
         Appointment appointment = new Appointment();
         appointment.setPatient(patient);
         appointment.setStartTime(createAppointmentDto.getStartTime());

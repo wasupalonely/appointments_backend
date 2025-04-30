@@ -234,7 +234,7 @@ public class AvailabilityService {
 
                     availableSlots.add(availableSlot);
 
-                    // Avanzar al siguiente slot potencial, incluyendo el tiempo buffer
+                    // Avanzar al siguiente slot potencial
                     currentStart = currentStart.plus(totalDuration);
                 }
             }

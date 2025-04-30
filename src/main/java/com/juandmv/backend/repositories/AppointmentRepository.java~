@@ -32,14 +32,4 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("endDate") LocalDateTime endDate,
             @Param("status") AppointmentStatus status,
             @Param("physicalLocationId") Long physicalLocationId);
-
-    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = :doctorId " +
-            "AND ((a.startTime BETWEEN :startTime AND :endTime) " +
-            "OR (a.endTime BETWEEN :startTime AND :endTime) " +
-            "OR (:startTime BETWEEN a.startTime AND a.endTime))")
-    List<Appointment> findByDoctorIdAndDateRange(
-            @Param("doctorId") Long doctorId,
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime
-    );
 }

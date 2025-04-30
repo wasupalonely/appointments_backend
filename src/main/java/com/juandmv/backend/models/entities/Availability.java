@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
@@ -29,10 +31,13 @@ public class Availability {
     private DayOfWeek dayOfWeek;
 
     @Column(nullable = false)
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private LocalDateTime endTime;
+    private LocalTime endTime;
+
+    @Column(nullable = true)
+    private LocalDate specificDate;
 
     @Column(nullable = false)
     private boolean isRecurring;

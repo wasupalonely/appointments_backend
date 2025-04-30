@@ -1,5 +1,6 @@
 package com.juandmv.backend.config;
 
+import com.juandmv.backend.enums.DocumentType;
 import com.juandmv.backend.models.entities.AppointmentType;
 import com.juandmv.backend.models.entities.Role;
 import com.juandmv.backend.models.entities.Specialty;
@@ -79,6 +80,8 @@ public class DatabaseSeeder implements CommandLineRunner {
                 userDto.setLastName("Admin");
                 userDto.setUsername("admin");
                 userDto.setEmail("admin@admin.com");
+                userDto.setDocumentType(DocumentType.EMAIL);
+                userDto.setDocumentNumber("admin@admin.com");
                 userDto.setPassword(passwordEncoder.encode("admin123"));
                 userDto.setPhone("1234567890");
                 this.userRepository.save(userDto);

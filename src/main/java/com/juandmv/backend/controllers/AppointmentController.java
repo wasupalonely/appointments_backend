@@ -91,24 +91,24 @@ public class AppointmentController {
         return ResponseEntity.ok(this.appointmentService.changeStatus(appointmentId, status));
     }
 
-    @GetMapping("/available")
-    public ResponseEntity<?> findAvailableAppointments(
-            @RequestParam Long appointmentTypeId,
-            @RequestParam(required = false) LocalDateTime startRange,
-            @RequestParam(required = false) LocalDateTime endRange) {
-
-        // Si no se proporciona un rango de fechas, usar un rango predeterminado (por ejemplo, las próximas 4 semanas)
-        if (startRange == null) {
-            startRange = LocalDateTime.now();
-        }
-        if (endRange == null) {
-            endRange = startRange.plusWeeks(4);
-        }
-
-        // Llamar al servicio para buscar citas disponibles
-        List<Map<String, Object>> availableAppointments = appointmentService.findAvailableAppointments(
-                appointmentTypeId, startRange, endRange);
-
-        return ResponseEntity.ok(Map.of("availableAppointments", availableAppointments));
-    }
+//    @GetMapping("/available")
+//    public ResponseEntity<?> findAvailableAppointments(
+//            @RequestParam Long appointmentTypeId,
+//            @RequestParam(required = false) LocalDateTime startRange,
+//            @RequestParam(required = false) LocalDateTime endRange) {
+//
+//        // Si no se proporciona un rango de fechas, usar un rango predeterminado (por ejemplo, las próximas 4 semanas)
+//        if (startRange == null) {
+//            startRange = LocalDateTime.now();
+//        }
+//        if (endRange == null) {
+//            endRange = startRange.plusWeeks(4);
+//        }
+//
+//        // Llamar al servicio para buscar citas disponibles
+//        List<Map<String, Object>> availableAppointments = appointmentService.findAvailableAppointments(
+//                appointmentTypeId, startRange, endRange);
+//
+//        return ResponseEntity.ok(Map.of("availableAppointments", availableAppointments));
+//    }
 }

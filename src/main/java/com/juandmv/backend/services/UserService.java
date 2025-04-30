@@ -120,9 +120,9 @@ public class UserService {
 
         User userSaved = userRepository.save(newUser);
 
-        if (createUserDto.getRole() == Roles.DOCTOR && createUserDto.isDefaultSchedule()) {
-            this.createDefaultAvailability(userSaved.getId());
-        }
+//        if (createUserDto.getRole() == Roles.DOCTOR && createUserDto.isDefaultSchedule()) {
+//            this.createDefaultAvailability(userSaved.getId());
+//        }
 
         return userSaved;
     }
@@ -147,35 +147,35 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    private void createDefaultAvailability(Long doctorId) {
-        List<DayOfWeek> daysOfWeek = List.of(DayOfWeek.values());
-        User doctor = this.findById(doctorId);
-
-        for (DayOfWeek day : daysOfWeek) {
-            if (day.name().equals("SATURDAY") || day.name().equals("SUNDAY")) {
-                continue;
-            } else {
-                LocalDate today = LocalDate.now(); // Usar la fecha actual
-
-                // Jornada mañana
-                Availability availability = new Availability();
-                availability.setDayOfWeek(day);
-                availability.setStartTime(LocalDateTime.of(today, java.time.LocalTime.of(7, 0)));
-                availability.setEndTime(LocalDateTime.of(today, java.time.LocalTime.of(12, 0)));
-                availability.setRecurring(true);
-                availability.setDoctor(doctor);
-
-                // Jornada tarde
-                Availability availability2 = new Availability();
-                availability2.setDayOfWeek(day);
-                availability2.setStartTime(LocalDateTime.of(today, java.time.LocalTime.of(14, 0)));
-                availability2.setEndTime(LocalDateTime.of(today, java.time.LocalTime.of(18, 0)));
-                availability2.setRecurring(true);
-                availability2.setDoctor(doctor);
-
-                this.availabilityRepository.save(availability);
-                this.availabilityRepository.save(availability2);
-            }
-        }
-    }
+//    private void createDefaultAvailability(Long doctorId) {
+//        List<DayOfWeek> daysOfWeek = List.of(DayOfWeek.values());
+//        User doctor = this.findById(doctorId);
+//
+//        for (DayOfWeek day : daysOfWeek) {
+//            if (day.name().equals("SATURDAY") || day.name().equals("SUNDAY")) {
+//                continue;
+//            } else {
+//                LocalDate today = LocalDate.now(); // Usar la fecha actual
+//
+//                // Jornada mañana
+//                Availability availability = new Availability();
+//                availability.setDayOfWeek(day);
+//                availability.setStartTime(LocalDateTime.of(today, java.time.LocalTime.of(7, 0)));
+//                availability.setEndTime(LocalDateTime.of(today, java.time.LocalTime.of(12, 0)));
+//                availability.setRecurring(true);
+//                availability.setDoctor(doctor);
+//
+//                // Jornada tarde
+//                Availability availability2 = new Availability();
+//                availability2.setDayOfWeek(day);
+//                availability2.setStartTime(LocalDateTime.of(today, java.time.LocalTime.of(14, 0)));
+//                availability2.setEndTime(LocalDateTime.of(today, java.time.LocalTime.of(18, 0)));
+//                availability2.setRecurring(true);
+//                availability2.setDoctor(doctor);
+//
+//                this.availabilityRepository.save(availability);
+//                this.availabilityRepository.save(availability2);
+//            }
+//        }
+//    }
 }

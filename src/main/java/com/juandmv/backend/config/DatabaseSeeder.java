@@ -78,7 +78,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                 userDto.setRoles(List.of(userRole.get()));
                 userDto.setFirstName("Admin");
                 userDto.setLastName("Admin");
-                userDto.setUsername("admin");
                 userDto.setEmail("admin@admin.com");
                 userDto.setDocumentType(DocumentType.EMAIL);
                 userDto.setDocumentNumber("admin@admin.com");
