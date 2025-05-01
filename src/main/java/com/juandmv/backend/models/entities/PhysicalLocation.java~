@@ -1,4 +1,0 @@
-package com.juandmv.backend.models.entities;
-
-public class PhysicalLocation {
-}

@@ -2,12 +2,9 @@ package com.juandmv.backend.auth;
 
 import com.juandmv.backend.auth.filter.JwtAuthenticationFilter;
 import com.juandmv.backend.auth.filter.JwtValidationFilter;
-import org.apache.catalina.filters.CorsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -70,21 +67,14 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedOrigins(List.of("http://localhost:3000")); // Específica tu origen
         config.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true);
         config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        config.setExposedHeaders(List.of("Authorization")); // Importante para JWT
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-
-    @Bean
-    FilterRegistrationBean<CorsFilter> corsFilter() {
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter());
-
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
     }
 }
