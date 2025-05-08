@@ -27,7 +27,10 @@ public class AppointmentTypeService {
 
     public List<AppointmentType> findAll() { return appointmentTypeRepository.findAll(); }
 
-    public List<AppointmentType> findBySpecialty(Long specialtyId) { return appointmentTypeRepository.findBySpecialty_Id(specialtyId); }
+    public List<AppointmentType> findBySpecialty(Long specialtyId) {
+        this.specialtyService.findById(specialtyId);
+        return appointmentTypeRepository.findBySpecialty_Id(specialtyId);
+    }
 
     public AppointmentType findById(Long id) {
         return appointmentTypeRepository

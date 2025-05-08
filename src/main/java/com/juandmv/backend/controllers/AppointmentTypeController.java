@@ -23,7 +23,7 @@ public class AppointmentTypeController {
         return ResponseEntity.ok(this.appointmentTypeService.findAll());
     }
 
-    @GetMapping("/specialty/{specialty}")
+    @GetMapping("/specialty/{specialtyId}")
     public ResponseEntity<List<AppointmentType>> findBySpecialty(@PathVariable Long specialtyId) {
         return ResponseEntity.ok(this.appointmentTypeService.findBySpecialty(specialtyId));
     }

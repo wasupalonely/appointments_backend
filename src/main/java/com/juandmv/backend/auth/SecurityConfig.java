@@ -5,6 +5,7 @@ import com.juandmv.backend.auth.filter.JwtValidationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,8 +49,33 @@ public class SecurityConfig {
                                         .requestMatchers("/swagger-ui/**").permitAll()
 					                    .requestMatchers("/api-docs").permitAll()
 
+                                        // APPOINTMENTS
                                         .requestMatchers("/appointments/**").authenticated()
+
+                                        // USERS
                                         .requestMatchers("/users/**").authenticated()
+
+                                        // SPECIALTIES
+                                        .requestMatchers(HttpMethod.GET, "/specialties/**").authenticated()
+                                        .requestMatchers(HttpMethod.POST, "/specialties/**").hasRole("ADMIN")
+                                        .requestMatchers(HttpMethod.PUT, "/specialties/**").hasRole("ADMIN")
+
+                                        // APPOINTMENT TYPES
+                                        .requestMatchers(HttpMethod.GET, "/appointment-types/**").authenticated()
+                                        .requestMatchers(HttpMethod.POST, "/appointment-types/**").hasRole("ADMIN")
+                                        .requestMatchers(HttpMethod.PUT, "/appointment-types/**").hasRole("ADMIN")
+
+                                        // AVAILABILITIES
+                                        .requestMatchers(HttpMethod.GET, "/availabilities/**").authenticated()
+                                        .requestMatchers(HttpMethod.POST, "/availabilities/**").hasAnyRole("ADMIN", "DOCTOR")
+                                        .requestMatchers(HttpMethod.PUT, "/availabilities/**").hasAnyRole("ADMIN", "DOCTOR")
+                                        .requestMatchers(HttpMethod.DELETE, "/availabilities/**").hasAnyRole("ADMIN", "DOCTOR")
+
+                                        // UNAVAILABILITIES
+                                        .requestMatchers(HttpMethod.GET, "/unavailabilities/**").authenticated()
+                                        .requestMatchers(HttpMethod.POST, "/unavailabilities/**").hasAnyRole("ADMIN", "DOCTOR")
+                                        .requestMatchers(HttpMethod.PUT, "/unavailabilities/**").hasAnyRole("ADMIN", "DOCTOR")
+                                        .requestMatchers(HttpMethod.DELETE, "/unavailabilities/**").hasAnyRole("ADMIN", "DOCTOR")
 
                                         // ONLY ADMIN
                                         .requestMatchers("/appointment-types/**").hasRole("ADMIN")

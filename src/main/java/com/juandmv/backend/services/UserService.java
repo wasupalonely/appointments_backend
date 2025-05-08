@@ -55,7 +55,10 @@ public class UserService {
 
     public List<User> findByRole(String role) { return userRepository.findByRoles_Name(role); }
 
-    public List<User> findBySpecialtyId(Long specialtyId) { return userRepository.findBySpecialtyId(specialtyId); }
+    public List<User> findBySpecialtyId(Long specialtyId) {
+        this.specialtyService.findById(specialtyId);
+        return userRepository.findBySpecialtyId(specialtyId);
+    }
 
     public User findById(Long id) {
         return userRepository.findById(id)
@@ -141,41 +144,8 @@ public class UserService {
         return userRepository.save(existingUser);
     }
 
-
     public void delete(Long id) {
         this.findById(id);
         userRepository.deleteById(id);
     }
-
-//    private void createDefaultAvailability(Long doctorId) {
-//        List<DayOfWeek> daysOfWeek = List.of(DayOfWeek.values());
-//        User doctor = this.findById(doctorId);
-//
-//        for (DayOfWeek day : daysOfWeek) {
-//            if (day.name().equals("SATURDAY") || day.name().equals("SUNDAY")) {
-//                continue;
-//            } else {
-//                LocalDate today = LocalDate.now(); // Usar la fecha actual
-//
-//                // Jornada mañana
-//                Availability availability = new Availability();
-//                availability.setDayOfWeek(day);
-//                availability.setStartTime(LocalDateTime.of(today, java.time.LocalTime.of(7, 0)));
-//                availability.setEndTime(LocalDateTime.of(today, java.time.LocalTime.of(12, 0)));
-//                availability.setRecurring(true);
-//                availability.setDoctor(doctor);
-//
-//                // Jornada tarde
-//                Availability availability2 = new Availability();
-//                availability2.setDayOfWeek(day);
-//                availability2.setStartTime(LocalDateTime.of(today, java.time.LocalTime.of(14, 0)));
-//                availability2.setEndTime(LocalDateTime.of(today, java.time.LocalTime.of(18, 0)));
-//                availability2.setRecurring(true);
-//                availability2.setDoctor(doctor);
-//
-//                this.availabilityRepository.save(availability);
-//                this.availabilityRepository.save(availability2);
-//            }
-//        }
-//    }
 }

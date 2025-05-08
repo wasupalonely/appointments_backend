@@ -23,6 +23,11 @@ public class UserController {
         return ResponseEntity.ok(this.userService.findAll());
     }
 
+    @GetMapping("/specialty/{specialtyId}")
+    public ResponseEntity<List<User>> findBySpecialtyId(@PathVariable Long specialtyId) {
+        return ResponseEntity.ok(this.userService.findBySpecialtyId(specialtyId));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody UpdateUserDto user) {
         return ResponseEntity.ok(this.userService.update(id, user));

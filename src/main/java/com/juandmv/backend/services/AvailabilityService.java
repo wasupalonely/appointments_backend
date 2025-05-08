@@ -43,7 +43,6 @@ public class AvailabilityService {
     public List<Availability> findByDoctorId(Long doctorId) { return availabilityRepository.findByDoctorId(doctorId); }
 
     public Availability save(CreateAvailabilityDto createAvailabilityDto) {
-        System.out.println("IS RECURRING'" + createAvailabilityDto.isRecurring());
         User doctor = userService.findById(createAvailabilityDto.getDoctorId());
         if (createAvailabilityDto.getEndTime().isBefore(createAvailabilityDto.getStartTime()) ||
                 createAvailabilityDto.getStartTime().isAfter(createAvailabilityDto.getEndTime())) {

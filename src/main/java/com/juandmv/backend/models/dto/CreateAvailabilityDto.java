@@ -32,5 +32,5 @@ public class CreateAvailabilityDto {
     private LocalDate specificDate;
 
     @NotNull(message = "La recurrencia es obligatorio")
-    private boolean isRecurring;
+    private boolean recurring;
 }
