@@ -1,6 +1,7 @@
 package com.juandmv.backend.config;
 
 import com.juandmv.backend.enums.DocumentType;
+import com.juandmv.backend.enums.Gender;
 import com.juandmv.backend.models.entities.AppointmentType;
 import com.juandmv.backend.models.entities.Role;
 import com.juandmv.backend.models.entities.Specialty;
@@ -79,10 +80,11 @@ public class DatabaseSeeder implements CommandLineRunner {
                 userDto.setFirstName("Admin");
                 userDto.setLastName("Admin");
                 userDto.setEmail("admin@admin.com");
-                userDto.setDocumentType(DocumentType.EMAIL);
-                userDto.setDocumentNumber("admin@admin.com");
+                userDto.setDocumentType(DocumentType.CITIZENSHIP_CARD);
+                userDto.setDocumentNumber("1234567890");
                 userDto.setPassword(passwordEncoder.encode("admin123"));
                 userDto.setPhone("1234567890");
+                userDto.setGender(Gender.MALE);
                 this.userRepository.save(userDto);
 
                 System.out.println("Usuario admin insertado correctamente.");
