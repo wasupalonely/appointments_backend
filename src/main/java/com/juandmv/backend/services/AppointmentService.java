@@ -104,36 +104,8 @@ public class AppointmentService {
     public Appointment update(Long id, @Valid UpdateAppointmentDto updateAppointmentDto) {
         Appointment appointment = this.findById(id);
 
-        boolean shouldReassignDoctor = false;
-
-        // Actualizar tipo de cita si se proporciona
-        if (updateAppointmentDto.getAppointmentTypeId() != null) {
-            appointment.setAppointmentType(appointmentTypeService.findById(updateAppointmentDto.getAppointmentTypeId()));
-            shouldReassignDoctor = true;
-        }
-
-        // Actualizar la hora de inicio y calcular la hora de finalización
-//        if (updateAppointmentDto.getStartTime() != null) {
-//            appointment.setStartTime(updateAppointmentDto.getStartTime());
-//            appointment.setEndTime(calculateEndTime(appointment));
-//            appointment.setStatus(AppointmentStatus.RE_SCHEDULED);
-//            shouldReassignDoctor = shouldReassignDoctor || !isDoctorAvailable(appointment.getDoctor(),
-//                    appointment.getStartTime(),
-//                    appointment.getEndTime());
-//        }
-
-//        // Reasignar doctor si es necesario
-//        if (shouldReassignDoctor) {
-//            appointment.setDoctor(getAppointmentDoctor(appointment));
-//        }
-
-        // Envío asíncrono de notificaciones
-        this.emailService.sendUpdateNotificationsAsync(appointment, shouldReassignDoctor);
-
-        // Actualizar notas si se proporcionan
-        if (updateAppointmentDto.getNotes() != null) {
-            appointment.setNotes(updateAppointmentDto.getNotes());
-        }
+        appointment.setStartTime(updateAppointmentDto.getStartTime());
+        appointment.setEndTime(updateAppointmentDto.getEndTime());
 
         return appointmentRepository.save(appointment);
     }

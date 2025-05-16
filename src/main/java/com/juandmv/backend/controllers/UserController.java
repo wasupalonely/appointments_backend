@@ -1,5 +1,6 @@
 package com.juandmv.backend.controllers;
 
+import com.juandmv.backend.enums.Roles;
 import com.juandmv.backend.models.dto.UpdateUserDto;
 import com.juandmv.backend.models.entities.User;
 import com.juandmv.backend.services.UserService;
@@ -26,6 +27,11 @@ public class UserController {
     @GetMapping("/specialty/{specialtyId}")
     public ResponseEntity<List<User>> findBySpecialtyId(@PathVariable Long specialtyId) {
         return ResponseEntity.ok(this.userService.findBySpecialtyId(specialtyId));
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<List<User>> findByRoleName(@RequestParam String roleName) {
+        return ResponseEntity.ok(this.userService.findByRoleName(roleName));
     }
 
     @PutMapping("/{id}")

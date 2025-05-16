@@ -53,7 +53,15 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public List<User> findByRole(String role) { return userRepository.findByRoles_Name(role); }
+    public List<User> findByRoleName(String roleName) {
+        try {
+            Roles roleNameEnum = Roles.valueOf(roleName.toUpperCase());
+            String roleNameFormatted = "ROLE_" + roleNameEnum;
+            return userRepository.findByRoleName(roleNameFormatted);
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Rol no encontrado");
+        }
+    }
 
     public List<User> findBySpecialtyId(Long specialtyId) {
         this.specialtyService.findById(specialtyId);
