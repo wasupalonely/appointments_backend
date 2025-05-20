@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "physical_locations")
 @Getter
@@ -21,4 +23,10 @@ public class PhysicalLocation {
     private String address;
 
     private boolean isActive = true;
+
+    @OneToMany(mappedBy = "physicalLocation")
+    private List<User> users;
+
+    @OneToMany(mappedBy = "physicalLocation")
+    private List<Appointment> appointments;
 }

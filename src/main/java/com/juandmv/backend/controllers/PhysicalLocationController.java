@@ -40,6 +40,7 @@ public class PhysicalLocationController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
+        this.physicalLocationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

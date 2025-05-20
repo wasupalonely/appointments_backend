@@ -11,9 +11,11 @@ public class CustomUserDetails extends User {
     private final String email;
     private final DocumentType documentType;
     private final String documentNumber;
+    private final String phone;
 
     public CustomUserDetails(Long id, String username, String password, String email,
                              DocumentType documentType, String documentNumber,
+                             String phone,
                              Collection<? extends GrantedAuthority> authorities,
                              boolean accountNonExpired, boolean accountNonLocked,
                              boolean credentialsNonExpired, boolean enabled) {
@@ -23,6 +25,7 @@ public class CustomUserDetails extends User {
         this.email = email;
         this.documentType = documentType;
         this.documentNumber = documentNumber;
+        this.phone = phone == null ? "" : phone;
     }
 
     public Long getId() {
@@ -39,5 +42,9 @@ public class CustomUserDetails extends User {
 
     public String getDocumentNumber() {
         return documentNumber;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 }

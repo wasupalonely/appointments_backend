@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "specialties")
@@ -24,4 +25,10 @@ public class Specialty {
 
     private Date createdAt = new Date();
     private Date updatedAt = new Date();
+
+    @OneToMany(mappedBy = "specialty")
+    private List<User> users;
+
+    @OneToMany(mappedBy = "specialty")
+    private List<AppointmentType> appointmentTypes;
 }

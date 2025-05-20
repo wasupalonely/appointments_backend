@@ -73,6 +73,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String email = user.getEmail();
         DocumentType documentType = user.getDocumentType();
         String documentNumber = user.getDocumentNumber();
+        String phone = user.getPhone();
 
         Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
 
@@ -102,6 +103,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         body.put("id", userId.toString());
         body.put("documentType", documentType.toString());
         body.put("documentNumber", documentNumber);
+        body.put("phone", phone);
         body.put("role", new ObjectMapper().writeValueAsString(roles));
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));

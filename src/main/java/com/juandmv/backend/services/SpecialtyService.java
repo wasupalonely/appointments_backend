@@ -1,5 +1,6 @@
 package com.juandmv.backend.services;
 
+import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.mappers.SpecialtyMapper;
 import com.juandmv.backend.models.dto.CreateSpecialtyDto;
@@ -44,7 +45,10 @@ public class SpecialtyService {
     }
 
     public void delete(Long id) {
-        this.findById(id);
-        specialtyRepository.deleteById(id);
+        Specialty specialty = this.findById(id);
+        if (!specialty.getUsers().isEmpty() || !specialty.getAppointmentTypes().isEmpty()) {
+            throw new BadRequestException("La especialidad tiene doctores o tipos de cita asociados y no puede ser eliminada");
+        }
+        specialtyRepository.delete(specialty);
     }
 }

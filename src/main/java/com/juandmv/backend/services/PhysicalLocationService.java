@@ -1,5 +1,6 @@
 package com.juandmv.backend.services;
 
+import com.juandmv.backend.exceptions.BadRequestException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.mappers.PhysicalLocationMapper;
 import com.juandmv.backend.models.dto.CreatePhysicalLocationDto;
@@ -41,9 +42,13 @@ public class PhysicalLocationService {
         return physicalLocationRepository.save(location);
     }
 
-    public PhysicalLocation delete(Long id) {
-        PhysicalLocation physicalLocation = findById(id);
-        physicalLocation.setActive(false);
-        return physicalLocationRepository.save(physicalLocation);
+    public void delete(Long id) {
+        // Verificar que la ubicación no tenga nada asociado, de lo contrario que no pueda eliminar
+        PhysicalLocation location = findById(id);
+
+        if (!location.getAppointments().isEmpty() || !location.getUsers().isEmpty()) {
+            throw new BadRequestException("La ubicación o doctores asociados y no puede ser eliminada");
+        }
+        physicalLocationRepository.delete(location);
     }
 }

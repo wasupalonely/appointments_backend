@@ -52,6 +52,7 @@ public class JpaUserDetailsService implements UserDetailsService {
                 user.getEmail(),
                 documentType,
                 documentNumber,
+                user.getPhone(),
                 authorities,
                 true,
                 true,

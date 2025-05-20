@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class UpdatePhysicalLocationDto {
 
-    @Size(min = 5, max = 14)
+    @Size(min = 5, max = 50)
     private String name;
 
     @Size(min = 10, max = 50)
