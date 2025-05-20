@@ -7,6 +7,7 @@ import com.juandmv.backend.models.dto.CreatePhysicalLocationDto;
 import com.juandmv.backend.models.dto.UpdatePhysicalLocationDto;
 import com.juandmv.backend.models.entities.PhysicalLocation;
 import com.juandmv.backend.repositories.PhysicalLocationRepository;
+import com.juandmv.backend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class PhysicalLocationService {
 
     @Autowired
     private PhysicalLocationMapper physicalLocationMapper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<PhysicalLocation> findAll() { return physicalLocationRepository.findAll(); }
 
@@ -46,9 +50,11 @@ public class PhysicalLocationService {
         // Verificar que la ubicación no tenga nada asociado, de lo contrario que no pueda eliminar
         PhysicalLocation location = findById(id);
 
-        if (!location.getAppointments().isEmpty() || !location.getUsers().isEmpty()) {
-            throw new BadRequestException("La ubicación o doctores asociados y no puede ser eliminada");
+        long userCount = userRepository.countByPhysicalLocationId(id);
+        if (userCount > 0) {
+            throw new BadRequestException("La ubicación tiene doctores asociados y no puede ser eliminada");
         }
+
         physicalLocationRepository.delete(location);
     }
 }

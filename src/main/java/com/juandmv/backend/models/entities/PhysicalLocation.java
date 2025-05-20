@@ -23,10 +23,4 @@ public class PhysicalLocation {
     private String address;
 
     private boolean isActive = true;
-
-    @OneToMany(mappedBy = "physicalLocation")
-    private List<User> users;
-
-    @OneToMany(mappedBy = "physicalLocation")
-    private List<Appointment> appointments;
 }

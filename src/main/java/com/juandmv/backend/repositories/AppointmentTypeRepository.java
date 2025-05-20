@@ -10,4 +10,6 @@ public interface AppointmentTypeRepository extends JpaRepository<AppointmentType
     List<AppointmentType> findBySpecialty_Id(Long specialtyId);
 
     List<AppointmentType> findByName(String name);
+
+    long countBySpecialtyId(Long specialtyId);
 }

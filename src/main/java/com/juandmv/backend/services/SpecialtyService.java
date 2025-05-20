@@ -6,7 +6,9 @@ import com.juandmv.backend.mappers.SpecialtyMapper;
 import com.juandmv.backend.models.dto.CreateSpecialtyDto;
 import com.juandmv.backend.models.dto.UpdateSpecialtyDto;
 import com.juandmv.backend.models.entities.Specialty;
+import com.juandmv.backend.repositories.AppointmentTypeRepository;
 import com.juandmv.backend.repositories.SpecialtyRepository;
+import com.juandmv.backend.repositories.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,12 @@ public class SpecialtyService {
 
     @Autowired
     private SpecialtyMapper specialtyMapper;
+
+    @Autowired
+    private AppointmentTypeRepository appointmentTypeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Specialty> findAll() { return specialtyRepository.findAll(); }
 
@@ -46,9 +54,11 @@ public class SpecialtyService {
 
     public void delete(Long id) {
         Specialty specialty = this.findById(id);
-        if (!specialty.getUsers().isEmpty() || !specialty.getAppointmentTypes().isEmpty()) {
-            throw new BadRequestException("La especialidad tiene doctores o tipos de cita asociados y no puede ser eliminada");
+
+        if (appointmentTypeRepository.countBySpecialtyId(id) > 0 || userRepository.countBySpecialtyId(id) > 0) {
+            throw new BadRequestException("La especialidad tiene tipos de citas o doctores asociadas y no puede ser eliminada");
         }
+
         specialtyRepository.delete(specialty);
     }
 }

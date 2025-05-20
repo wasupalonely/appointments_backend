@@ -21,4 +21,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     public List<User> findAllUsersWithRoles();
 
     public List<User> findBySpecialtyId(Long id);
+
+    long countByPhysicalLocationId(Long locationId);
+
+    long countBySpecialtyId(Long specialtyId);
 }
