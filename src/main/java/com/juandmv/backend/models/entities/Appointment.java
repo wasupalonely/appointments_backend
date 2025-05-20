@@ -1,5 +1,7 @@
 package com.juandmv.backend.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.juandmv.backend.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -51,9 +53,11 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "parentAppointmentId", referencedColumnName = "id")
+    @JsonBackReference
     private Appointment parentAppointment; // Cita principal (padre)
 
     @OneToMany(mappedBy = "parentAppointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Appointment> derivedAppointments = new ArrayList<>();
 
 }

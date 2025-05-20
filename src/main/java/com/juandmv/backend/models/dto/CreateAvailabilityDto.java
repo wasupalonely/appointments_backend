@@ -2,6 +2,7 @@ package com.juandmv.backend.models.dto;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
@@ -29,6 +30,7 @@ public class CreateAvailabilityDto {
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalTime endTime;
 
+    @FutureOrPresent
     private LocalDate specificDate;
 
     @NotNull(message = "La recurrencia es obligatorio")
