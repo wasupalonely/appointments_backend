@@ -96,7 +96,7 @@ public class AvailabilityService {
         );
 
         // Paso 4: Generar los slots disponibles
-        return generateAvailableSlots(availabilities, unavailabilities, bookedAppointments, appointmentDuration);
+        return generateAvailableSlots(availabilities, unavailabilities, bookedAppointments, appointmentDuration, startDate, endDate);
     }
 
     /**
@@ -126,7 +126,9 @@ public class AvailabilityService {
             List<Availability> availabilities,
             List<Unavailability> unavailabilities,
             List<Appointment> bookedAppointments,
-            int appointmentDurationMinutes) {
+            int appointmentDurationMinutes,
+            LocalDate startDate,
+            LocalDate endDate) {
 
         List<AvailableSlotDto> availableSlots = new ArrayList<>();
 
@@ -135,7 +137,7 @@ public class AvailabilityService {
 
         // Paso 1: Generar todos los slots potenciales de disponibilidad
         for (Availability availability : availabilities) {
-            List<LocalDate> applicableDates = getApplicableDates(availability);
+            List<LocalDate> applicableDates = getApplicableDates(availability, startDate, endDate);
 
             for (LocalDate date : applicableDates) {
                 LocalTime startTime = availability.getStartTime();
@@ -248,7 +250,7 @@ public class AvailabilityService {
     /**
      * Obtiene las fechas aplicables para una disponibilidad dentro del período
      */
-    private List<LocalDate> getApplicableDates(Availability availability) {
+    private List<LocalDate> getApplicableDates(Availability availability, LocalDate startDate, LocalDate endDate) {
         List<LocalDate> dates = new ArrayList<>();
 
         if (!availability.isRecurring()) {
@@ -259,10 +261,7 @@ public class AvailabilityService {
         } else {
             // Para disponibilidades recurrentes, encontrar todas las fechas que coinciden
             // con el día de la semana especificado en el período
-            LocalDate currentDate = LocalDate.now();
-            LocalDate endDate = currentDate.plusDays(30); // Podemos ajustar este período según sea necesario
-
-            LocalDate date = currentDate;
+            LocalDate date = startDate;
             while (!date.isAfter(endDate)) {
                 if (date.getDayOfWeek() == availability.getDayOfWeek()) {
                     dates.add(date);
