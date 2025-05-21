@@ -5,6 +5,7 @@ import com.juandmv.backend.models.dto.CreateAppointmentDto;
 import com.juandmv.backend.models.dto.UpdateAppointmentDto;
 import com.juandmv.backend.models.dto.UpdateAppointmentTypeDto;
 import com.juandmv.backend.models.entities.Appointment;
+import com.juandmv.backend.models.responses.CountResponse;
 import com.juandmv.backend.services.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,20 +34,38 @@ public class AppointmentController {
     @Autowired
     private AppointmentService appointmentService;
 
+    @GetMapping("/count")
+    public ResponseEntity<CountResponse> countByPatientIdAndStatus(
+            @RequestParam Long userId,
+            @RequestParam AppointmentStatus status
+            ) {
+        return ResponseEntity.ok(this.appointmentService.countByPatientIdAndStatus(userId, status));
+    }
+
     @Operation(summary = "Obtener las citas filtradas", description = "Devuelve las citas según los filtros aplicados")
     @ApiResponse(responseCode = "200", description = "Citas obtenidas correctamente")
     @GetMapping
-    public ResponseEntity<List<Appointment>> findAll(
+    public ResponseEntity<Page<Appointment>> findAll(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false) AppointmentStatus status,
-            @RequestParam(required = false) Long physicalLocationId) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "startTime") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
 
-        if (startDate == null && endDate == null && status == null && physicalLocationId == null) {
-            return ResponseEntity.ok(this.appointmentService.findAll());
+        // Crear objeto Pageable para paginación y ordenamiento
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ?
+                Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // Determinar qué método llamar según los parámetros proporcionados
+        if (startDate == null && endDate == null && status == null) {
+            return ResponseEntity.ok(this.appointmentService.findAll(pageable));
+        } else {
+            return ResponseEntity.ok(this.appointmentService.findAppointmentsByFilters(
+                    startDate, endDate, status, pageable));
         }
-
-        return ResponseEntity.ok(this.appointmentService.findAppointmentsByFilters(startDate, endDate, status, physicalLocationId));
     }
 
 //    @Operation(summary = "Obtener las citas", description = "Devuelve todas las citas")
@@ -89,6 +112,11 @@ public class AppointmentController {
     @PatchMapping("/{appointmentId}/status/{status}")
     public ResponseEntity<Appointment> changeStatus(@PathVariable Long appointmentId, @PathVariable AppointmentStatus status) {
         return ResponseEntity.ok(this.appointmentService.changeStatus(appointmentId, status));
+    }
+
+    @GetMapping("/closest-appointment/{userId}")
+    public ResponseEntity<Appointment> getClosestAppointment(@PathVariable Long userId) {
+        return ResponseEntity.ok(this.appointmentService.getNextAppointmentByPatientId(userId));
     }
 
 //    @GetMapping("/available")
