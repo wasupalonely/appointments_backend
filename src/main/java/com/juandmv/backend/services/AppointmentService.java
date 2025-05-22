@@ -8,18 +8,23 @@ import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.exceptions.ScheduleConflictException;
 import com.juandmv.backend.models.dto.*;
 import com.juandmv.backend.models.entities.*;
+import com.juandmv.backend.models.responses.CountResponse;
 import com.juandmv.backend.repositories.AppointmentRepository;
 import com.juandmv.backend.utils.Utils;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -51,12 +56,14 @@ public class AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
     }
 
-    public List<Appointment> findAll() { return appointmentRepository.findAll(); }
+    public Page<Appointment> findAll(Pageable pageable) {
+        return appointmentRepository.findAll(pageable);
+    }
 
-    public List<Appointment> findAppointmentsByFilters(LocalDateTime startDate, LocalDateTime endDate,
-                                                       AppointmentStatus status, Long physicalLocationId) {
+    public Page<Appointment> findAppointmentsByFilters(LocalDateTime startDate, LocalDateTime endDate,
+                                                       AppointmentStatus status, Pageable pageable) {
 
-        return appointmentRepository.findAppointmentsByFilters(startDate, endDate, status, physicalLocationId);
+        return appointmentRepository.findAppointmentsByFilters(startDate, endDate, status, pageable);
     }
 
     public List<Appointment> findByPatientId(Long patientId) { return appointmentRepository.findByPatientId(patientId); }
@@ -168,5 +175,32 @@ public class AppointmentService {
         Appointment appointment = this.findById(id);
         appointment.setStatus(status);
         return this.appointmentRepository.save(appointment);
+    }
+
+    public CountResponse countByPatientIdAndStatus(Long patientId, AppointmentStatus status) {
+        Long count = this.appointmentRepository.countByPatientIdAndStatus(patientId, status);
+
+        return new CountResponse(
+                count
+        );
+    }
+
+    public Appointment getNextAppointmentByPatientId(Long patientId) {
+        this.userService.findById(patientId);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Appointment> patientAppointmentsResp = this.findByPatientId(patientId);
+
+        List<Appointment> patientAppointments = patientAppointmentsResp.stream()
+                .filter(appointment -> appointment.getStatus() == AppointmentStatus.PENDING)
+                .toList();
+
+        Optional<Appointment> closestAppointment = patientAppointments.stream()
+                .min(Comparator.comparing(date ->
+                        Math.abs(ChronoUnit.SECONDS.between(now, date.getStartTime()))
+                ));
+
+        return closestAppointment.orElse(null);
     }
 }
