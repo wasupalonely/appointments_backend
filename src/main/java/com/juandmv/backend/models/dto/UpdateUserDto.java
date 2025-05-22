@@ -1,9 +1,6 @@
 package com.juandmv.backend.models.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +13,7 @@ public class UpdateUserDto {
     private String lastName;
     private String username;
 
-    @Max(value = 10, message = "El télefono debe tener como máximo 10 caracteres")
+    @Size(min = 10, max = 10, message = "El teléfono debe tener 10 caracteres")
     private String phone;
 
     @Email(message = "El correo debe ser válido")
