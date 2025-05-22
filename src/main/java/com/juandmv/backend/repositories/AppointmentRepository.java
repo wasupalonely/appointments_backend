@@ -40,10 +40,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "AND ((a.startTime BETWEEN :startTime AND :endTime) " +
             "OR (a.endTime BETWEEN :startTime AND :endTime) " +
             "OR (:startTime BETWEEN a.startTime AND a.endTime))")
-    List<Appointment> findByDoctorIdAndDateRange(
+    List<Appointment> findByDoctorIdAndDateRangeAndStatus(
             @Param("doctorId") Long doctorId,
             @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime
+            @Param("endTime") LocalDateTime endTime,
+            @Param("status") AppointmentStatus status
     );
 
     long countByPatientIdAndStatus(Long patientId, AppointmentStatus status);

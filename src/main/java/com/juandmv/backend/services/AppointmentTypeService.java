@@ -25,11 +25,11 @@ public class AppointmentTypeService {
     @Autowired
     private AppointmentTypeMapper appointmentTypeMapper;
 
-    public List<AppointmentType> findAll() { return appointmentTypeRepository.findAll(); }
+    public List<AppointmentType> findAll(Boolean isGeneral) { return appointmentTypeRepository.findAll(isGeneral); }
 
-    public List<AppointmentType> findBySpecialty(Long specialtyId) {
+    public List<AppointmentType> findBySpecialty(Long specialtyId, Boolean isGeneral) {
         this.specialtyService.findById(specialtyId);
-        return appointmentTypeRepository.findBySpecialty_Id(specialtyId);
+        return appointmentTypeRepository.findBySpecialty_Id(specialtyId, isGeneral);
     }
 
     public AppointmentType findById(Long id) {

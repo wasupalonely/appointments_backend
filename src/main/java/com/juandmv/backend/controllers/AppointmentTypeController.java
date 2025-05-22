@@ -19,13 +19,13 @@ public class AppointmentTypeController {
     private AppointmentTypeService appointmentTypeService;
 
     @GetMapping
-    public ResponseEntity<List<AppointmentType>> findAll() {
-        return ResponseEntity.ok(this.appointmentTypeService.findAll());
+    public ResponseEntity<List<AppointmentType>> findAll(@RequestParam(required = false) Boolean isGeneral) {
+        return ResponseEntity.ok(this.appointmentTypeService.findAll(isGeneral));
     }
 
     @GetMapping("/specialty/{specialtyId}")
-    public ResponseEntity<List<AppointmentType>> findBySpecialty(@PathVariable Long specialtyId) {
-        return ResponseEntity.ok(this.appointmentTypeService.findBySpecialty(specialtyId));
+    public ResponseEntity<List<AppointmentType>> findBySpecialty(@PathVariable Long specialtyId, @RequestParam(required = false) Boolean isGeneral) {
+        return ResponseEntity.ok(this.appointmentTypeService.findBySpecialty(specialtyId, isGeneral));
     }
 
     @PostMapping

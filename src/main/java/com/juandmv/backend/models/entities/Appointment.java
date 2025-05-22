@@ -35,6 +35,14 @@ public class Appointment {
     @Column(nullable = false)
     private AppointmentStatus status;
 
+    private String cancellationReason;
+
+    private LocalDateTime cancelledAt;
+
+    @ManyToOne
+    @JoinColumn(name = "cancelledByUserId")
+    private User cancelledBy;
+
     @ManyToOne
     @JoinColumn(name = "patientId", referencedColumnName = "id")
     private User patient;

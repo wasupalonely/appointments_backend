@@ -1,6 +1,7 @@
 package com.juandmv.backend.controllers;
 
 import com.juandmv.backend.enums.AppointmentStatus;
+import com.juandmv.backend.models.dto.CancelAppointmentDto;
 import com.juandmv.backend.models.dto.CreateAppointmentDto;
 import com.juandmv.backend.models.dto.UpdateAppointmentDto;
 import com.juandmv.backend.models.dto.UpdateAppointmentTypeDto;
@@ -105,8 +106,10 @@ public class AppointmentController {
     }
 
     @PatchMapping("/{appointmentId}/cancel/{userId}")
-    public ResponseEntity<Map<String, Object>> cancel(@PathVariable Long appointmentId, @PathVariable Long userId) {
-        return ResponseEntity.ok(this.appointmentService.cancelAppointment(appointmentId, userId));
+    public ResponseEntity<Map<String, Object>> cancel(@PathVariable Long appointmentId,
+                                                      @PathVariable Long userId,
+                                                      @RequestBody CancelAppointmentDto cancelAppointmentDto) {
+        return ResponseEntity.ok(this.appointmentService.cancelAppointment(appointmentId, userId, cancelAppointmentDto.getCancellationReason()));
     }
 
     @PatchMapping("/{appointmentId}/status/{status}")

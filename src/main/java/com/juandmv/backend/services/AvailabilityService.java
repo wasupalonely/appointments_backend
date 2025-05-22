@@ -1,5 +1,6 @@
 package com.juandmv.backend.services;
 
+import com.juandmv.backend.enums.AppointmentStatus;
 import com.juandmv.backend.exceptions.InvalidDatesRangeException;
 import com.juandmv.backend.exceptions.ResourceNotFoundException;
 import com.juandmv.backend.models.dto.AvailableSlotDto;
@@ -89,10 +90,11 @@ public class AvailabilityService {
         );
 
         // Paso 3: Obtener todas las citas programadas del médico en el período
-        List<Appointment> bookedAppointments = appointmentRepository.findByDoctorIdAndDateRange(
+        List<Appointment> bookedAppointments = appointmentRepository.findByDoctorIdAndDateRangeAndStatus(
                 doctorId,
                 startDate.atStartOfDay(),
-                endDate.plusDays(1).atStartOfDay()
+                endDate.plusDays(1).atStartOfDay(),
+                AppointmentStatus.PENDING
         );
 
         // Paso 4: Generar los slots disponibles
