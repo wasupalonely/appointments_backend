@@ -138,6 +138,34 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void sendCancellationEmailByDoctorAndNotRescheduleAsync(Appointment appointment, User user) {
+        try {
+            // Preparar el EmailRequest
+            EmailRequest emailRequest = new EmailRequest();
+            emailRequest.setReceiver(user.getEmail());
+            emailRequest.setName(user.getFullName());
+            emailRequest.setSubject("Cita cancelada por el doctor, y no se puede reagendar");
+            emailRequest.setMessage("No se pudo reasginar la cita, por favor, contacte a un administrador");
+
+            // Enviar correo asíncrono
+            this.send(emailRequest);
+
+            // Crear y guardar recordatorio
+            CreateReminderDto createReminderDto = new CreateReminderDto();
+            createReminderDto.setTitle("Cita cancelada por el doctor, y no se puede reagendar");
+            createReminderDto.setAppointmentId(appointment.getId());
+            createReminderDto.setMessage("No se pudo reasginar la cita, por favor, contacte a un administrador");
+            createReminderDto.setReceiverId(user.getId());
+            createReminderDto.setReminderType(ReminderType.APPOINTMENT_CANCELLED);
+
+            reminderService.save(createReminderDto);
+
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de cancelación: {}", e.getMessage());
+        }
+    }
+
     //----------------------------------------------------------------------------------------------------
 
     // AL ACTUALIZAR LA CITA SE EJECUTA EL SIGUIENTE BLOQUE

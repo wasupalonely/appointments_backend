@@ -187,7 +187,7 @@ public class AppointmentService {
         Map<String, Object> result = new HashMap<>();
 
         if (isDoctorCancelling) {
-            result = handleDoctorCancellation(appointment, user);
+            result = handleDoctorCancellation(appointment, user, appointment.getPatient());
         } else {
             result = handlePatientCancellation(appointment, user);
         }
@@ -256,7 +256,7 @@ public class AppointmentService {
         return result;
     }
 
-    private Map<String, Object> handleDoctorCancellation(Appointment appointment, User doctor) {
+    private Map<String, Object> handleDoctorCancellation(Appointment appointment, User doctor, User patient) {
         Map<String, Object> result = new HashMap<>();
 
         // Intentar reagendar automáticamente
@@ -267,6 +267,9 @@ public class AppointmentService {
             result.put("newAppointment", rescheduleResult.getNewAppointment());
             result.put("message", "La cita ha sido reagendada automáticamente con otro doctor disponible");
             result.put("automaticReschedule", true);
+
+            emailService.sendCancellationEmailAndReminderAsync(appointment, patient, false);
+            emailService.sendAppointmentNotifications(rescheduleResult.getNewAppointment());
         } else {
             // No se pudo reagendar automáticamente
             result.put("appointment", appointment);
@@ -274,9 +277,10 @@ public class AppointmentService {
             result.put("automaticReschedule", false);
             result.put("availableSlots", rescheduleResult.getAvailableSlots());
             result.put("alternativeDoctors", rescheduleResult.getAlternativeDoctors());
-
+dd
             // Crear tarea pendiente para reagendar manualmente
             createRescheduleTask(appointment, rescheduleResult);
+            emailService.sendCancellationEmailByDoctorAndNotRescheduleAsync(appointment, patient);
         }
 
         return result;
