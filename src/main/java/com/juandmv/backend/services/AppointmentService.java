@@ -277,7 +277,6 @@ public class AppointmentService {
             result.put("automaticReschedule", false);
             result.put("availableSlots", rescheduleResult.getAvailableSlots());
             result.put("alternativeDoctors", rescheduleResult.getAlternativeDoctors());
-dd
             // Crear tarea pendiente para reagendar manualmente
             createRescheduleTask(appointment, rescheduleResult);
             emailService.sendCancellationEmailByDoctorAndNotRescheduleAsync(appointment, patient);
